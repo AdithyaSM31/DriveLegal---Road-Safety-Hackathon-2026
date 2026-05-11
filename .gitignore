@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Database (generated - will be rebuilt from seed scripts)
+data/drivelegal.db
+
+# ChromaDB (generated - will be rebuilt from embeddings script)
+data/chroma_db/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp / build files
+*.log
+*.tmp
+
+# Hackathon helper scripts (not part of the project)
+../md_to_pdf.py
+../create_docx.py
+../DriveLegal_Implementation_Plan.html
+../DriveLegal_Team_Task_Breakdown.docx
