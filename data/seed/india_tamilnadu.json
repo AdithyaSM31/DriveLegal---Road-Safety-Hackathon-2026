@@ -1,0 +1,53 @@
+{
+  "country": "India",
+  "country_code": "IN",
+  "jurisdiction": "Tamil Nadu",
+  "jurisdiction_type": "state",
+  "effective_date": "2022-10-18",
+  "source_title": "Tamil Nadu Home (Transport) Department",
+  "source_url": "https://tnpolice.gov.in",
+  "act": "Motor Vehicles Act 1988 (Amended 2019)",
+  "violations": [
+    {
+      "id": "TN_001",
+      "name": "Riding without helmet",
+      "description": "Riding a two-wheeler without protective headgear for both rider and pillion",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "194D",
+        "related_section": "129"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Two-wheeler"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "minimum_fine": 1000,
+        "maximum_fine": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Disqualification",
+        "duration": "3 months"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": "Tamil Nadu updated fine amounts strictly adhering to the 2019 National Amendment",
+      "source": {
+        "title": "G.O. Ms. No. 593 (Home Transport Department)",
+        "url": "https://tnpolice.gov.in"
+      },
+      "tags": [
+        "helmet",
+        "two-wheeler",
+        "safety",
+        "pillion"
+      ]
+    }
+  ]
+}
