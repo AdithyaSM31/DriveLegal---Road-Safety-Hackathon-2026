@@ -18,7 +18,29 @@ from backend.core.database import SCHEMA_SQL
 
 SEED_DIR = project_root / "data" / "seed"
 
+LAW_MAP = {
+    "194D": "Riding without helmet",
+    "194B": "Driving without seat belt",
+    "194C": "Triple riding on a two-wheeler",
+    "181":  "Driving without a valid license",
+    "184":  "Dangerous driving / Mobile usage",
+    "185":  "Drunk driving",
+    "183":  "Over-speeding",
+}
 
+
+def get_or_create(db, table, name, extra_cols=None, extra_vals=None):
+    """Return the id of an existing row by name, or insert and return new id."""
+    row = db.execute(f"SELECT id FROM {table} WHERE name = ?", (name,)).fetchone()
+    if row:
+        return row["id"]
+    if extra_cols and extra_vals:
+        cols = "name, " + ", ".join(extra_cols)
+        placeholders = ", ".join(["?"] * (1 + len(extra_vals)))
+        db.execute(f"INSERT INTO {table} ({cols}) VALUES ({placeholders})", (name, *extra_vals))
+    else:
+        db.execute(f"INSERT INTO {table} (name) VALUES (?)", (name,))
+    return db.execute(f"SELECT id FROM {table} WHERE name = ?", (name,)).fetchone()["id"]
 def seed():
     db = sqlite3.connect(DATABASE_PATH)
     db.row_factory = sqlite3.Row
@@ -34,64 +56,60 @@ def seed():
 
         print(f"Processing {filename}...")
 
-        # ── 1. Insert country ──────────────────────────────────────────
-        db.execute(
-            """INSERT OR IGNORE INTO countries (name, code, legal_system, currency, currency_symbol)
-               VALUES (?,?,?,?,?)""",
-            (data["country"], data["country_code"], "federal", "INR", "₹")
-        )
-        country_row = db.execute(
-            "SELECT id FROM countries WHERE code = ?", (data["country_code"],)
-        ).fetchone()
-        country_id = country_row["id"]
+        # ── 1. Country ─────────────────────────────────────────────────
+        country_name = data["country"]
+        country_code = data["country_code"]
+        row = db.execute("SELECT id FROM countries WHERE code = ?", (country_code,)).fetchone()
+        if row:
+            country_id = row["id"]
+        else:
+            db.execute(
+                "INSERT INTO countries (name, code, legal_system, currency, currency_symbol) VALUES (?,?,?,?,?)",
+                (country_name, country_code, "federal", "INR", "₹")
+            )
+            country_id = db.execute("SELECT id FROM countries WHERE code = ?", (country_code,)).fetchone()["id"]
 
-        # ── 2. Insert jurisdiction ─────────────────────────────────────
-        db.execute(
-            """INSERT OR IGNORE INTO jurisdictions (country_id, name, type, effective_date, source_url)
-               VALUES (?,?,?,?,?)""",
-            (country_id, data["jurisdiction"], data["jurisdiction_type"],
-             data["effective_date"], data["source_url"])
-        )
-        jur_row = db.execute(
-            "SELECT id FROM jurisdictions WHERE name = ?", (data["jurisdiction"],)
-        ).fetchone()
-        jurisdiction_id = jur_row["id"]
+        # ── 2. Jurisdiction ────────────────────────────────────────────
+        jur_name = data["jurisdiction"]
+        row = db.execute("SELECT id FROM jurisdictions WHERE name = ?", (jur_name,)).fetchone()
+        if row:
+            jurisdiction_id = row["id"]
+        else:
+            db.execute(
+                "INSERT INTO jurisdictions (country_id, name, type, effective_date, source_url) VALUES (?,?,?,?,?)",
+                (country_id, jur_name, data["jurisdiction_type"], data["effective_date"], data["source_url"])
+            )
+            jurisdiction_id = db.execute("SELECT id FROM jurisdictions WHERE name = ?", (jur_name,)).fetchone()["id"]
 
-        # ── 3. Loop through violations ─────────────────────────────────
+        # ── 3. Violations ──────────────────────────────────────────────
         for v in data.get("violations", []):
 
-            # 3a. Insert violation category (derived from each violation)
-            category_name = v.get("category", "General")
-            db.execute(
-                "INSERT OR IGNORE INTO violation_categories (name, icon) VALUES (?,?)",
-                (category_name, "")
-            )
-            cat_row = db.execute(
-                "SELECT id FROM violation_categories WHERE name = ?", (category_name,)
-            ).fetchone()
-            category_id = cat_row["id"]
+            # 3a. Category — reuse if already exists
+            category_id = get_or_create(db, "violation_categories", v.get("category", "General"), ["icon"], [""])
 
-            # 3b. Build section_reference string from object
+            # 3b. Section reference
             sec_ref = v.get("section_reference", {})
-            if isinstance(sec_ref, dict):
-                section_str = sec_ref.get("act_section", "")
+            section_str = sec_ref.get("act_section", "") if isinstance(sec_ref, dict) else str(sec_ref)
+
+            # 3c. Violation — use canonical name from LAW_MAP if section matches
+            import re
+            def extract_primary_section(s):
+                parts = re.findall(r'\d+[A-Z]?', s.upper().replace(" ", ""))
+                return parts[-1] if parts else ""
+
+            primary_section = extract_primary_section(section_str)
+            canonical_name = LAW_MAP.get(primary_section, v["name"])
+
+            row = db.execute("SELECT id FROM violations WHERE name = ?", (canonical_name,)).fetchone()
+            if row:
+                violation_id = row["id"]
             else:
-                section_str = str(sec_ref)
-
-            # 3c. Insert violation
-            db.execute(
-                """INSERT OR IGNORE INTO violations
-                   (category_id, name, description, section_reference, severity)
-                   VALUES (?,?,?,?,?)""",
-                (category_id, v["name"], v.get("description", ""),
-                 section_str, v.get("severity", "minor"))
-            )
-            vio_row = db.execute(
-                "SELECT id FROM violations WHERE name = ?", (v["name"],)
-            ).fetchone()
-            violation_id = vio_row["id"]
-
-            # 3d. Build license_action string from object
+                db.execute(
+                    "INSERT INTO violations (category_id, name, description, section_reference, severity) VALUES (?,?,?,?,?)",
+                    (category_id, canonical_name, v.get("description", ""), section_str, v.get("severity", "minor"))
+                )
+                violation_id = db.execute("SELECT id FROM violations WHERE name = ?", (canonical_name,)).fetchone()["id"]
+            # 3d. License action
             lic = v.get("license_action")
             if isinstance(lic, dict):
                 lic_str = f"{lic.get('type', '')} - {lic.get('duration', '')}".strip(" -")
@@ -100,28 +118,22 @@ def seed():
             else:
                 lic_str = None
 
-            # 3e. Additional penalties — join list to string
+            # 3e. Additional penalties
             additional = v.get("additional_penalties", [])
             additional_str = ", ".join(additional) if additional else None
 
-            # 3f. Notes
-            notes = v.get("notes")
-
-            # 3g. Source
+            # 3f. Source
             source_info = v.get("source", {})
-            if isinstance(source_info, dict):
-                source_str = source_info.get("title", data.get("source_title", ""))
-            else:
-                source_str = str(source_info)
+            source_str = source_info.get("title", data.get("source_title", "")) if isinstance(source_info, dict) else str(source_info)
 
-            # 3h. Fines block
+            # 3g. Fines
             fines = v.get("fines", {})
             first_fine      = fines.get("first_offence")
             subsequent_fine = fines.get("subsequent_offence")
             compounding_fee = fines.get("compounding_fee")
             max_fine        = fines.get("maximum_fine")
 
-            # 3i. Imprisonment
+            # 3h. Imprisonment
             imprisonment = v.get("imprisonment")
             if isinstance(imprisonment, dict):
                 imprisonment_str = f"{imprisonment.get('duration', '')} {imprisonment.get('type', '')}".strip()
@@ -130,22 +142,13 @@ def seed():
             else:
                 imprisonment_str = None
 
-            # 3j. Insert one fine_schedule row per vehicle class
+            # 3i. Fine schedule per vehicle class — reuse vehicle class if exists
             vehicle_classes = v.get("vehicle_classes", [None])
             for vc_name in vehicle_classes:
-                vc_id = None
-                if vc_name:
-                    db.execute(
-                        "INSERT OR IGNORE INTO vehicle_classes (name, description) VALUES (?,?)",
-                        (vc_name, "")
-                    )
-                    vc_row = db.execute(
-                        "SELECT id FROM vehicle_classes WHERE name = ?", (vc_name,)
-                    ).fetchone()
-                    vc_id = vc_row["id"]
+                vc_id = get_or_create(db, "vehicle_classes", vc_name) if vc_name else None
 
                 db.execute(
-                    """INSERT OR IGNORE INTO fine_schedules
+                    """INSERT INTO fine_schedules
                        (violation_id, jurisdiction_id, vehicle_class_id,
                         first_offence_fine, subsequent_offence_fine, compounding_fee, max_fine,
                         imprisonment_text, license_action, points_deducted,
@@ -156,14 +159,14 @@ def seed():
                         first_fine, subsequent_fine, compounding_fee, max_fine,
                         imprisonment_str, lic_str,
                         v.get("points_deducted"),
-                        additional_str, notes,
+                        additional_str, v.get("notes"),
                         data["effective_date"], source_str
                     )
                 )
 
     db.commit()
     db.close()
-    print("[OK] Database seeded successfully from all JSON files!")
+    print("[OK] Database seeded successfully!")
     print(f"     Path: {DATABASE_PATH}")
 
 
