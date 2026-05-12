@@ -1,0 +1,52 @@
+{
+  "country": "India",
+  "country_code": "IN",
+  "jurisdiction": "West Bengal",
+  "jurisdiction_type": "state",
+  "effective_date": "2022-01-24",
+  "source_title": "West Bengal Traffic Police",
+  "source_url": "https://www.wbtrafficpolice.com/offences-and-penalties.php",
+  "act": "Motor Vehicles Act 1988 (Amended 2019)",
+  "violations": [
+    {
+      "id": "WB_001",
+      "name": "Riding without helmet",
+      "description": "Driving or riding a two-wheeler without protective headgear",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "129 MVA / 194D MVA",
+        "related_section": "129"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Two-wheeler"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "minimum_fine": 1000,
+        "maximum_fine": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Disqualification",
+        "duration": "3 months"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": "As per Schedule II Notification No. 208-WT/3M-128/97(Pt.III)(D), Govt. of West Bengal",
+      "source": {
+        "title": "West Bengal Traffic Offences and Penalties",
+        "url": "https://www.wbtrafficpolice.com/offences-and-penalties.php"
+      },
+      "tags": [
+        "helmet",
+        "two-wheeler",
+        "safety"
+      ]
+    }
+  ]
+}

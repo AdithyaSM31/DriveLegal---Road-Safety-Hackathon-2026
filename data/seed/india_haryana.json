@@ -1,0 +1,52 @@
+{
+  "country": "India",
+  "country_code": "IN",
+  "jurisdiction": "Haryana",
+  "jurisdiction_type": "state",
+  "effective_date": "2019-09-01",
+  "source_title": "Haryana Traffic Police",
+  "source_url": "https://haryanatraffic.gov.in",
+  "act": "Motor Vehicles Act 1988 (Amended 2019)",
+  "violations": [
+    {
+      "id": "HR_001",
+      "name": "Riding without helmet",
+      "description": "Driving or riding a two-wheeler without protective headgear",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "129 MVA / 194D MVA",
+        "related_section": "129"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Two-wheeler"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "minimum_fine": 1000,
+        "maximum_fine": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Disqualification",
+        "duration": "3 months"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": "Haryana follows the national Motor Vehicles Act fine structure for helmet violations",
+      "source": {
+        "title": "Haryana Traffic Police Challan Rules",
+        "url": "https://haryanatraffic.gov.in"
+      },
+      "tags": [
+        "helmet",
+        "two-wheeler",
+        "safety"
+      ]
+    }
+  ]
+}
