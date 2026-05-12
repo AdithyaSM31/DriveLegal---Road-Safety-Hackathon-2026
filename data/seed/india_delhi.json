@@ -1,0 +1,52 @@
+{
+  "country": "India",
+  "country_code": "IN",
+  "jurisdiction": "Delhi",
+  "jurisdiction_type": "state",
+  "effective_date": "2019-09-01",
+  "source_title": "Delhi Traffic Police",
+  "source_url": "https://traffic.delhipolice.gov.in",
+  "act": "Motor Vehicles Act 1988 (Amended 2019)",
+  "violations": [
+    {
+      "id": "DL_001",
+      "name": "Riding without helmet",
+      "description": "Riding a two-wheeler without protective headgear",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "194D",
+        "related_section": "129"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Two-wheeler"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "minimum_fine": 1000,
+        "maximum_fine": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Disqualification",
+        "duration": "3 months"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": "Delhi follows the national MV Act fine structure",
+      "source": {
+        "title": "Delhi Traffic Police Challan Rules",
+        "url": "https://traffic.delhipolice.gov.in"
+      },
+      "tags": [
+        "helmet",
+        "two-wheeler",
+        "safety"
+      ]
+    }
+  ]
+}
