@@ -1,0 +1,354 @@
+{
+  "country": "India",
+  "country_code": "IN",
+  "jurisdiction": "Maharashtra",
+  "jurisdiction_type": "state",
+  "effective_date": "2019-09-01",
+  "source_title": "Maharashtra Traffic Police",
+  "source_url": "https://mahatrafficpolice.gov.in",
+  "act": "Motor Vehicles Act 1988 (Amended 2019)",
+  "violations": [
+    {
+      "id": "MH_001",
+      "name": "Riding without a helmet (Driver or Pillion)",
+      "description": "Riding a two-wheeler without protective headgear",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "194D"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Two-wheeler"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Disqualification",
+        "duration": "3 months"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "helmet",
+        "two-wheeler",
+        "safety"
+      ]
+    },
+    {
+      "id": "MH_002",
+      "name": "Driving without a seat belt",
+      "description": "Driving a motor vehicle without wearing a safety belt",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "194B"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Four-wheeler",
+        "LMV",
+        "HMV"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": null,
+      "points_deducted": null,
+      "additional_penalties": [
+        "Applies to both drivers and passengers"
+      ],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "seatbelt",
+        "four-wheeler",
+        "safety"
+      ]
+    },
+    {
+      "id": "MH_003",
+      "name": "Triple riding on a two-wheeler",
+      "description": "Carrying more than one pillion rider on a two-wheeler",
+      "category": "Safety Equipment",
+      "section_reference": {
+        "act_section": "194C"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "Two-wheeler"
+      ],
+      "fines": {
+        "first_offence": 1000,
+        "subsequent_offence": 1000,
+        "compounding_fee": 1000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Disqualification",
+        "duration": "3 months"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 1000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "triple-riding",
+        "two-wheeler",
+        "safety"
+      ]
+    },
+    {
+      "id": "MH_004",
+      "name": "Driving without a valid driving license",
+      "description": "Driving a vehicle without holding a valid driving license",
+      "category": "Documentation",
+      "section_reference": {
+        "act_section": "181"
+      },
+      "severity": "major",
+      "vehicle_classes": [],
+      "fines": {
+        "first_offence": 5000,
+        "subsequent_offence": 10000,
+        "compounding_fee": 5000
+      },
+      "imprisonment": "Imprisonment up to 3 months for repeat offences",
+      "license_action": null,
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 5000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "license",
+        "documentation"
+      ]
+    },
+    {
+      "id": "MH_005",
+      "name": "Using a mobile phone while driving",
+      "description": "Using a handheld mobile phone while operating a vehicle",
+      "category": "Dangerous Driving",
+      "section_reference": {
+        "act_section": "184"
+      },
+      "severity": "major",
+      "vehicle_classes": [],
+      "fines": {
+        "first_offence": 5000,
+        "subsequent_offence": 10000,
+        "compounding_fee": 5000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Suspension",
+        "duration": "Possible suspension"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 5000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "mobile",
+        "dangerous-driving"
+      ]
+    },
+    {
+      "id": "MH_006",
+      "name": "Drunk driving (Driving under the influence)",
+      "description": "Driving under the influence of alcohol or drugs",
+      "category": "Alcohol & Drugs",
+      "section_reference": {
+        "act_section": "185"
+      },
+      "severity": "critical",
+      "vehicle_classes": [],
+      "fines": {
+        "first_offence": 10000,
+        "subsequent_offence": 15000
+      },
+      "imprisonment": "Imprisonment up to 6 months for first offence; up to 2 years for repeat offence",
+      "license_action": null,
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 10000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "dui",
+        "drunk-driving",
+        "alcohol"
+      ]
+    },
+    {
+      "id": "MH_007",
+      "name": "Over-speeding",
+      "description": "Exceeding the prescribed speed limit for light motor vehicles",
+      "category": "Speeding",
+      "section_reference": {
+        "act_section": "183(1)"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [
+        "LMV"
+      ],
+      "fines": {
+        "first_offence": 2000,
+        "subsequent_offence": 2000,
+        "compounding_fee": 2000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Seizure",
+        "duration": "On repeat offences"
+      },
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 2000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "speeding",
+        "lmv"
+      ]
+    },
+    {
+      "id": "MH_008",
+      "name": "Driving an uninsured vehicle",
+      "description": "Driving a vehicle without valid third-party insurance",
+      "category": "Documentation",
+      "section_reference": {
+        "act_section": "146 / 196"
+      },
+      "severity": "major",
+      "vehicle_classes": [],
+      "fines": {
+        "first_offence": 2000,
+        "subsequent_offence": 4000,
+        "compounding_fee": 2000
+      },
+      "imprisonment": "Imprisonment up to 3 months or community service",
+      "license_action": null,
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 2000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "insurance",
+        "documentation"
+      ]
+    },
+    {
+      "id": "MH_009",
+      "name": "Driving without a valid PUC certificate",
+      "description": "Driving a vehicle without a valid Pollution Under Control certificate",
+      "category": "Documentation",
+      "section_reference": {
+        "act_section": "190(2)"
+      },
+      "severity": "moderate",
+      "vehicle_classes": [],
+      "fines": {
+        "first_offence": 10000,
+        "subsequent_offence": 10000,
+        "compounding_fee": 10000
+      },
+      "imprisonment": "Imprisonment up to 6 months or community service",
+      "license_action": null,
+      "points_deducted": null,
+      "additional_penalties": [],
+      "is_state_modified": false,
+      "national_reference_fine": 10000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "puc",
+        "pollution",
+        "documentation"
+      ]
+    },
+    {
+      "id": "MH_010",
+      "name": "Not giving way to emergency vehicles",
+      "description": "Failing to give way to emergency vehicles such as Ambulance or Fire Brigade",
+      "category": "Emergency & Special",
+      "section_reference": {
+        "act_section": "194E"
+      },
+      "severity": "critical",
+      "vehicle_classes": [],
+      "fines": {
+        "first_offence": 10000,
+        "subsequent_offence": 10000
+      },
+      "imprisonment": null,
+      "license_action": {
+        "type": "Suspension",
+        "duration": "Possible suspension"
+      },
+      "points_deducted": null,
+      "additional_penalties": [
+        "Possible community service"
+      ],
+      "is_state_modified": false,
+      "national_reference_fine": 10000,
+      "notes": null,
+      "source": {
+        "title": "Maharashtra Traffic Police",
+        "url": "https://mahatrafficpolice.gov.in"
+      },
+      "tags": [
+        "emergency",
+        "ambulance"
+      ]
+    }
+  ]
+}
