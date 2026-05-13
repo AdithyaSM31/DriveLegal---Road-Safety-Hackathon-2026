@@ -6,6 +6,8 @@ const APP_SHELL = [
   "/styles.css",
   "/app.js",
   "/manifest.json",
+  "/js/offline.js",
+  "/js/api.js",
 ];
 
 // INSTALL EVENT
