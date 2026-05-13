@@ -46,7 +46,7 @@ async def browse_traffic_laws(
     return LawsResponse(**data)
 
 
-@router.get("/export", response_model=list[FineScheduleOut])
+@router.get("/export/all", response_model=list[FineScheduleOut])
 async def export_all_laws():
     """
     Export ALL fine schedules in a single response.
