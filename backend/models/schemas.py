@@ -151,5 +151,5 @@ class Citation(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    citations: list[Citation] = []
+    citations: list[str] = []
     session_id: str

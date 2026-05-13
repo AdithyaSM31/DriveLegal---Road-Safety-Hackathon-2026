@@ -8,6 +8,8 @@ from fastapi import APIRouter, HTTPException
 
 from backend.models.schemas import ChatRequest, ChatResponse
 from backend.core.llm import get_llm
+from backend.core.embeddings import similarity_search
+from backend.core.prompts import SYSTEM_PROMPT
 
 router = APIRouter(prefix="/api/chat", tags=["AI Chatbot"])
 
@@ -15,46 +17,45 @@ router = APIRouter(prefix="/api/chat", tags=["AI Chatbot"])
 @router.post("/", response_model=ChatResponse)
 async def chat(req: ChatRequest):
     """
-    AI-powered chat about traffic laws.
-    Day 1: Uses Groq LLM directly for general answers (No RAG yet).
-    Day 2: Will integrate Nitin's RAG pipeline with ChromaDB.
+    RAG-powered AI chat about traffic laws.
+    Combines ChromaDB vector search with Groq LLM.
     """
     session_id = req.session_id or str(uuid.uuid4())
 
     llm = get_llm()
     
     if not llm:
-        # Fallback if API key is not configured
         return ChatResponse(
             reply=(
-                "DriveLegal AI is currently offline (API key not configured). "
-                "Please use the Challan Calculator for exact fine lookups, or browse "
-                "the Law Browser for comprehensive traffic law information."
+                "DriveLegal AI is currently offline (Groq API key not configured). "
+                "Please check your .env settings."
             ),
             citations=[],
             session_id=session_id,
         )
         
     try:
-        # Basic LLM call (Day 1) - No RAG injected yet
-        # We add a basic system prompt to keep it focused
-        system_prompt = (
-            "You are DriveLegal AI, a helpful assistant specializing in Indian traffic laws and road safety. "
-            "Keep your answers concise, accurate, and professional."
-        )
+        # 1. Retrieve relevant law context from ChromaDB
+        # We search based on the user's message
+        context_docs = similarity_search(req.message, top_k=3)
+        context_text = "\n---\n".join(context_docs) if context_docs else "No specific legal context found."
+
+        # 2. Format the system prompt with context
+        formatted_system_prompt = SYSTEM_PROMPT.format(context=context_text)
         
         messages = [
-            ("system", system_prompt),
+            ("system", formatted_system_prompt),
             ("human", req.message)
         ]
         
+        # 3. Generate response via Groq
         response = llm.invoke(messages)
         
         return ChatResponse(
             reply=response.content,
-            citations=[],  # Citations will be added when RAG is implemented
+            citations=context_docs, # Returning raw snippets as citations for now
             session_id=session_id,
         )
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"LLM Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"RAG Pipeline Error: {str(e)}")

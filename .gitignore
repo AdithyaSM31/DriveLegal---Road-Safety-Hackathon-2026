@@ -17,6 +17,7 @@ env/
 data/drivelegal.db
 
 # ChromaDB (generated - will be rebuilt from embeddings script)
+chroma_db/
 data/chroma_db/
 
 # IDE
