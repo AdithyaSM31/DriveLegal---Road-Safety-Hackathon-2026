@@ -1,6 +1,6 @@
 # DriveLegal — India's Road Traffic Law Assistant
 
-![DriveLegal Banner](https://via.placeholder.com/1200x300.png?text=DriveLegal+-+Offline+First+Road+Safety+Assistant)
+![DriveLegal Banner](https://placehold.co/1200x300/0A0E17/FFFFFF/png?text=DriveLegal+-+India's+Road+Traffic+Law+Assistant)
 
 **DriveLegal** is an intelligent, offline-first Progressive Web App (PWA) designed to empower Indian citizens with instant access to the Motor Vehicles Act (1988), state-specific amendments, and a precise Challan Calculator. Featuring an AI Legal Assistant powered by Retrieval-Augmented Generation (RAG), DriveLegal ensures you always know your rights on the road, even without an internet connection.
 
