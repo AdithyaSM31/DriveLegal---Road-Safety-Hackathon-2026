@@ -18,7 +18,7 @@ CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", str(BASE_DIR / "data" / "chroma_db"
 FRONTEND_DIR = str(BASE_DIR / "frontend")
 
 # --- API Keys ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 # --- Server ---
 HOST = os.getenv("HOST", "0.0.0.0")
