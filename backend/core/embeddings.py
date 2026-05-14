@@ -1,8 +1,8 @@
 import os
 from typing import Optional
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+import chromadb
+from chromadb.utils import embedding_functions
 
 # Dynamically calculate directories relative to this file
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -10,32 +10,35 @@ DB_DIR = os.path.join(BASE_DIR, "data", "chroma_db")
 COLLECTION_NAME = "traffic_laws"
 
 # Lazy-loaded singletons (avoid loading model on every API startup)
-_embedding_model: Optional[HuggingFaceEmbeddings] = None
-_vector_store: Optional[Chroma] = None
+_chroma_client: Optional[chromadb.PersistentClient] = None
+_collection = None
 
 
-def get_vector_store() -> Chroma:
-    """Lazy-load embedding model + persistent Chroma vector store."""
-    global _embedding_model, _vector_store
+def get_vector_store():
+    """Lazy-load persistent Chroma collection using the default embedding function."""
+    global _chroma_client, _collection
 
-    if _vector_store is None:
-        print("🔄 Loading local embedding model (all-MiniLM-L6-v2)...")
-        _embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-        print("✅ Local embedding model loaded successfully.")
-
-        _vector_store = Chroma(
-            persist_directory=DB_DIR,
-            embedding_function=_embedding_model,
-            collection_name=COLLECTION_NAME,
+    if _collection is None:
+        os.makedirs(DB_DIR, exist_ok=True)
+        print("🔄 Loading ChromaDB with default embedding model...")
+        _chroma_client = chromadb.PersistentClient(path=DB_DIR)
+        _ef = embedding_functions.DefaultEmbeddingFunction()
+        _collection = _chroma_client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=_ef,
         )
-    return _vector_store
+        print(f"✅ ChromaDB collection '{COLLECTION_NAME}' ready ({_collection.count()} docs).")
+    return _collection
 
 
 def similarity_search(query: str, top_k: int = 5) -> list[str]:
-    """Return raw page_content strings for best-matching chunks."""
+    """Return raw document strings for best-matching chunks."""
     try:
-        results = get_vector_store().similarity_search(query, k=top_k)
-        return [doc.page_content for doc in results]
+        collection = get_vector_store()
+        if collection.count() == 0:
+            return []
+        results = collection.query(query_texts=[query], n_results=min(top_k, collection.count()))
+        return results["documents"][0] if results["documents"] else []
     except Exception as e:
         print(f"❌ Error during similarity search: {e}")
         return []
@@ -46,4 +49,3 @@ if __name__ == "__main__":
     print(f"ChromaDB persistent storage located at: {DB_DIR}")
     get_vector_store()
     print("Vector store ready.")
-

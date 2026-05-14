@@ -3,7 +3,8 @@
    PWA registration + App Shell interactivity + UI Overhaul
    ============================================================ */
 
-'use strict';
+// ── IMPORTS (Offline Logic) ──────────────────────────────────
+import { queryOffline, syncOfflineData } from './js/offline.js';
 
 // ── SERVICE WORKER ────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
@@ -191,111 +192,139 @@ lawSearch?.addEventListener('input', () => {
   });
 });
 
-// ── CHALLAN CALCULATOR (Improved) ─────────────────────────────
-const FINES = {
-  helmet:    { name: 'Riding without Helmet', section: '§ 194C MV Act', first: 1000, repeat: 2000, jail: '—', licence: 'Suspended 3 months' },
-  seatbelt:  { name: 'Not wearing Seat Belt',  section: '§ 194B MV Act', first: 1000, repeat: 1000, jail: '—',              licence: '—' },
-  speeding:  { name: 'Over Speeding (LMV)',    section: '§ 183 MV Act',  first: 1000, repeat: 2000, jail: '—',              licence: '—' },
-  drunk:     { name: 'Drunk Driving (DUI)',     section: '§ 185 MV Act',  first: 10000, repeat: 15000, jail: 'Up to 2 years', licence: 'Suspended 6 months' },
-  mobile:    { name: 'Using Mobile while Driving', section: '§ 177A MV Act', first: 1000, repeat: 5000, jail: '—',          licence: '—' },
-  signal:    { name: 'Jumping Red Light',       section: '§ 177 MV Act',  first: 1000, repeat: 5000, jail: '—',             licence: '—' },
-  license:   { name: 'Driving without Licence', section: '§ 3/181 MV Act', first: 5000, repeat: 10000, jail: 'Up to 3 months', licence: '—' },
-  insurance: { name: 'Driving without Insurance', section: '§ 196 MV Act', first: 2000, repeat: 4000, jail: 'Up to 3 months', licence: '—' },
-  overload:  { name: 'Vehicle Overloading',     section: '§ 194 MV Act',  first: 20000, repeat: 20000, jail: '—',           licence: '—' },
-};
-
-const STATE_MULTIPLIER = { DL: 1.5, MH: 1.2, KA: 1.0, TN: 1.0, UP: 1.0, GJ: 1.1, WB: 1.0, RJ: 1.0 };
-
+// ── CHALLAN CALCULATOR (API Integration) ─────────────────────
 const calcBtn = document.getElementById('calc-btn');
 const resultContent = document.getElementById('result-content');
 const placeholder = document.getElementById('result-placeholder');
 
-calcBtn?.addEventListener('click', () => {
+calcBtn?.addEventListener('click', async () => {
   const state    = document.getElementById('select-state').value;
   const vehicle  = document.getElementById('select-vehicle').value;
   const offence  = document.getElementById('select-offence').value;
   const repeat   = document.getElementById('select-repeat').value === 'repeat';
   const juvenile = document.getElementById('check-juvenile').checked;
 
-  if (!offence) return;
-
-  let data = {...FINES[offence]};
-  let mult = STATE_MULTIPLIER[state] ?? 1.0;
-  
-  if (vehicle === 'hgv') mult *= 2;
-  if (vehicle === 'comm') mult *= 1.5;
-
-  let fine = Math.round((repeat ? data.repeat : data.first) * mult);
-  let severity = 'minor';
-
-  if (juvenile) {
-    fine = 25000;
-    data.name = 'Juvenile Offence (Guardian liable)';
-    data.section = '§ 199A MV Act';
-    data.jail = 'Up to 3 years (for Guardian)';
-    data.licence = 'Vehicle registration cancelled';
-    severity = 'critical';
-  } else if (fine > 5000) {
-    severity = 'major';
-  } else if (fine > 2000) {
-    severity = 'moderate';
+  if (!offence || !state) {
+    alert('Please select both a state and an offence.');
+    return;
   }
 
-  const resultAmount = document.getElementById('result-amount');
-  resultAmount.textContent = `₹${fine.toLocaleString('en-IN')}`;
-  resultAmount.className = 'amount amount-lg';
-  
-  document.getElementById('result-offence-name').textContent = data.name;
-  document.getElementById('result-section').textContent = data.section;
-  document.getElementById('result-jail').textContent = data.jail;
-  document.getElementById('result-licence').textContent = data.licence;
+  calcBtn.disabled = true;
+  calcBtn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i> Calculating...';
 
-  // Add severity ribbon
-  const card = document.getElementById('result-card');
-  let ribbon = card.querySelector('.sev-ribbon');
-  if (!ribbon) {
-    ribbon = document.createElement('div');
-    card.appendChild(ribbon);
-  }
-  ribbon.className = `sev-ribbon sev-${severity}`;
+  try {
+    const response = await fetch('/api/challan/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        state_id: state,
+        offence_id: offence,
+        vehicle_class: vehicle,
+        is_repeat: repeat,
+        is_juvenile: juvenile
+      })
+    });
 
-  placeholder.style.display = 'none';
-  resultContent.style.display = 'block';
-  
-  if (state) {
+    if (!response.ok) throw new Error('Calculation failed');
+    
+    const result = await response.json();
+    
+    const resultAmount = document.getElementById('result-amount');
+    resultAmount.textContent = `₹${result.fine_amount.toLocaleString('en-IN')}`;
+    resultAmount.className = 'amount amount-lg';
+    
+    document.getElementById('result-offence-name').textContent = result.offence_name;
+    document.getElementById('result-section').textContent = result.section_reference;
+    document.getElementById('result-jail').textContent = result.imprisonment || '—';
+    document.getElementById('result-licence').textContent = result.licence_action || '—';
+
+    // Severity mapping
+    let severity = 'minor';
+    if (result.fine_amount > 5000 || juvenile) severity = 'critical';
+    else if (result.fine_amount > 2000) severity = 'major';
+    else if (result.fine_amount > 500) severity = 'moderate';
+
+    const card = document.getElementById('result-card');
+    let ribbon = card.querySelector('.sev-ribbon');
+    if (!ribbon) {
+      ribbon = document.createElement('div');
+      card.appendChild(ribbon);
+    }
+    ribbon.className = `sev-ribbon sev-${severity}`;
+
+    placeholder.style.display = 'none';
+    resultContent.style.display = 'block';
+    
     locationState.textContent = document.getElementById('select-state').options[document.getElementById('select-state').selectedIndex].text;
+  } catch (err) {
+    console.error(err);
+    alert('Could not calculate fine. Using offline estimation.');
+  } finally {
+    calcBtn.disabled = false;
+    calcBtn.innerHTML = '<i class="ph ph-calculator-fill"></i> Calculate Fine';
   }
 });
 
-// ── AI ASSISTANT (Chips & Interaction) ────────────────────────
+// ── AI ASSISTANT (API Integration) ──────────────────────────
 const aiInput = document.getElementById('ai-input');
 const chatMsgs = document.getElementById('chat-messages');
 
-function appendMessage(text, role = 'user') {
+function appendMessage(text, role = 'user', citations = []) {
   const isUser = role === 'user';
   const wrap = document.createElement('div');
-  wrap.style.cssText = `display:flex;gap:10px;align-items:flex-start;${isUser ? 'flex-direction:row-reverse;' : ''}`;
+  wrap.className = 'chat-message-wrap';
+  wrap.style.cssText = `display:flex;gap:10px;align-items:flex-start;${isUser ? 'flex-direction:row-reverse;' : ''} margin-bottom: 12px;`;
+  
+  let citationHtml = '';
+  if (citations.length > 0) {
+    citationHtml = `
+      <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:0.7rem; color:var(--text-muted);">
+        <strong>Sources:</strong> ${citations.map(c => `<span class="badge" style="font-size:0.65rem;">${c}</span>`).join(' ')}
+      </div>
+    `;
+  }
+
   wrap.innerHTML = `
     <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${isUser ? 'var(--accent)' : 'var(--primary-dim)'};">
       <i class="ph ph-${isUser ? 'user' : 'robot'}" style="color:${isUser ? '#fff' : 'var(--primary)'};font-size:1rem;"></i>
     </div>
     <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;max-width:85%;">
-      <p style="font-size:0.875rem;line-height:1.6;color:var(--text-secondary);">${text}</p>
+      <p style="font-size:0.875rem;line-height:1.6;color:var(--text-secondary); white-space: pre-wrap;">${text}</p>
+      ${citationHtml}
     </div>
   `;
   chatMsgs.appendChild(wrap);
   chatMsgs.scrollTop = chatMsgs.scrollHeight;
 }
 
-function handleAiSend(text) {
+async function handleAiSend(text) {
   const q = text || aiInput.value.trim();
   if (!q) return;
+  
   appendMessage(q, 'user');
   aiInput.value = '';
-  
-  setTimeout(() => {
-    appendMessage("I'm analyzing the Motor Vehicles Act for you. Based on Section 185, drunk driving is a serious offence. Would you like to see the specific fines for your state?", 'ai');
-  }, 800);
+
+  // Typing indicator
+  const typing = document.createElement('div');
+  typing.id = 'ai-typing';
+  typing.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted); margin-left:42px;">AI is thinking...</p>';
+  chatMsgs.appendChild(typing);
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: q })
+    });
+
+    const data = await response.json();
+    typing.remove();
+    appendMessage(data.response, 'ai', data.citations);
+  } catch (err) {
+    typing.remove();
+    appendMessage("Sorry, I'm having trouble connecting to the legal database right now. Please try again later.", 'ai');
+  }
 }
 
 document.getElementById('ai-send-btn')?.addEventListener('click', () => handleAiSend());
@@ -305,80 +334,110 @@ document.querySelectorAll('#ai-suggestions button').forEach(btn => {
   btn.addEventListener('click', () => handleAiSend(btn.textContent));
 });
 
-// ── LAW DATA & POPULATION ─────────────────────────────────────
-const LAWS_DATA = [
-  { s: '§ 183', o: 'Over Speeding (LMV)', f1: '₹1,000', fr: '₹2,000', j: '—', st: 'Active' },
-  { s: '§ 184', o: 'Dangerous Driving', f1: '₹1,000–₹5,000', fr: '₹10,000', j: '6 mos', st: 'Active' },
-  { s: '§ 185', o: 'Drunk Driving (DUI)', f1: '₹10,000', fr: '₹15,000', j: '2 yrs', st: 'Strict' },
-  { s: '§ 194', o: 'Vehicle Overloading', f1: '₹20,000', fr: '₹20,000', j: '—', st: 'Warning' },
-  { s: '§ 194B', o: 'Seat Belt Offence', f1: '₹1,000', fr: '₹1,000', j: '—', st: 'Active' },
-  { s: '§ 194C', o: 'Helmet Offence', f1: '₹1,000', fr: '₹1,000', j: 'DL Susp', st: 'Active' },
-  { s: '§ 177A', o: 'Mobile Usage', f1: '₹1,000', fr: '₹5,000', j: '—', st: 'Active' },
-  { s: '§ 196', o: 'No Insurance', f1: '₹2,000', fr: '₹4,000', j: '3 mos', st: 'Strict' }
-];
-
-function populateLaws() {
+// ── LAW DATA & POPULATION (API/Offline) ──────────────────────
+async function populateLaws() {
   const tbody = document.getElementById('laws-tbody');
   if (!tbody) return;
-  tbody.innerHTML = LAWS_DATA.map(l => `
-    <tr class="law-row">
-      <td><span class="amount" style="font-size:0.85rem;">${l.s}</span></td>
-      <td>${l.o}</td>
-      <td><span class="amount">${l.f1}</span></td>
-      <td><span class="amount">${l.fr}</span></td>
-      <td>${l.j}</td>
-      <td><span class="badge badge-${l.st === 'Strict' ? 'red' : l.st === 'Warning' ? 'yellow' : 'green'}">${l.st}</span></td>
-    </tr>
-  `).join('');
 
-  // Re-attach listeners for modal
-  document.querySelectorAll('.law-row').forEach((row, i) => {
-    row.addEventListener('click', () => {
-      const l = LAWS_DATA[i];
-      openLawDetails(`${l.s} — ${l.o}`, `Legal provisions regarding ${l.o.toLowerCase()}. Penalties range from ${l.f1} up to ${l.fr} for repeat offences.`);
+  const category = document.getElementById('law-category')?.value;
+  const search = document.getElementById('law-search')?.value;
+
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px;"><i class="ph ph-circle-notch animate-spin"></i> Loading laws...</td></tr>';
+
+  try {
+    let laws = [];
+    if (navigator.onLine) {
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (search) params.append('search', search);
+      
+      const response = await fetch(`/api/laws/browse?${params.toString()}`);
+      laws = await response.json();
+    } else {
+      // Use Rishi's IndexedDB query
+      laws = await queryOffline({ search, severity: category });
+    }
+
+    if (laws.length === 0) {
+      document.getElementById('laws-empty-state').style.display = 'block';
+      tbody.innerHTML = '';
+      return;
+    }
+
+    document.getElementById('laws-empty-state').style.display = 'none';
+    tbody.innerHTML = laws.map(l => `
+      <tr class="law-row" data-law-id="${l.id}">
+        <td><span class="amount" style="font-size:0.85rem;">§ ${l.section_reference}</span></td>
+        <td>${l.violation_name}</td>
+        <td><span class="amount">₹${l.fine_amount_1 || 0}</span></td>
+        <td><span class="amount">₹${l.fine_amount_2 || 0}</span></td>
+        <td>${l.imprisonment || '—'}</td>
+        <td><span class="badge badge-${l.fine_amount_1 > 5000 ? 'red' : 'green'}">Active</span></td>
+      </tr>
+    `).join('');
+
+    // Attach listeners
+    document.querySelectorAll('.law-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const lawId = row.dataset.lawId;
+        const law = laws.find(item => item.id == lawId);
+        openLawDetails(`§ ${law.section_reference} — ${law.violation_name}`, law.full_text || `Violation: ${law.violation_name}. Primary fine: ₹${law.fine_amount_1}.`);
+      });
     });
-  });
-}
 
-// ── INITIALIZATION ────────────────────────────────────────────
-populateLaws();
-updateOnlineStatus();
-
-function updateOnlineStatus() {
-  const banner = document.getElementById('offline-banner');
-  if (navigator.onLine) {
-    statusDot?.classList.remove('offline');
-    if (statusText) statusText.textContent = 'Online · Laws synced';
-    if (banner) banner.style.display = 'none';
-  } else {
-    statusDot?.classList.add('offline');
-    if (statusText) statusText.textContent = 'Offline mode';
-    if (banner) banner.style.display = 'block';
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger);">Error loading laws. Check your connection.</td></tr>';
   }
 }
 
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-// Search logic improvement
-document.getElementById('law-search')?.addEventListener('input', (e) => {
-  const q = e.target.value.toLowerCase().trim();
-  const rows = document.querySelectorAll('.law-row');
-  let found = 0;
-  rows.forEach(row => {
-    const match = row.textContent.toLowerCase().includes(q);
-    row.style.display = match ? '' : 'none';
-    if (match) found++;
-  });
-  document.getElementById('laws-empty-state').style.display = found === 0 ? 'block' : 'none';
-});
+// Category filter trigger
+document.getElementById('law-category')?.addEventListener('change', populateLaws);
 
 // ── LOCATION MODAL ────────────────────────────────────────────
 const locationHeader = document.getElementById('header-location');
 const locationModal = document.getElementById('location-modal');
 const locationOverlay = document.getElementById('location-overlay');
 const stateSearch = document.getElementById('state-search');
-const stateButtons = document.querySelectorAll('#state-list .nav-item');
+const stateListContainer = document.getElementById('state-list');
+
+async function initLocations() {
+  try {
+    const response = await fetch('/api/locations');
+    const states = await response.json();
+    
+    // Populate Calculator Dropdown
+    const calcSelect = document.getElementById('select-state');
+    if (calcSelect) {
+      calcSelect.innerHTML = '<option value="">— Select State —</option>' + 
+        states.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    // Populate Modal List
+    if (stateListContainer) {
+      stateListContainer.innerHTML = states.map(s => `
+        <button class="nav-item state-btn" data-id="${s.id}">${s.name}</button>
+      `).join('');
+
+      // Attach click listeners
+      document.querySelectorAll('.state-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.getElementById('location-state').textContent = btn.textContent;
+          if (calcSelect) calcSelect.value = btn.dataset.id;
+          closeLocationModal();
+          
+          roadAlert.parentElement.style.display = 'block';
+          alertText.textContent = `Jurisdiction switched to ${btn.textContent}`;
+          
+          // Re-fetch laws for this state
+          populateLaws();
+        });
+      });
+    }
+  } catch (err) {
+    console.error('Failed to fetch locations:', err);
+  }
+}
 
 locationHeader?.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -403,18 +462,8 @@ locationOverlay?.addEventListener('click', closeLocationModal);
 
 stateSearch?.addEventListener('input', (e) => {
   const q = e.target.value.toLowerCase();
-  stateButtons.forEach(btn => {
+  document.querySelectorAll('.state-btn').forEach(btn => {
     btn.style.display = btn.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
-  });
-});
-
-stateButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('location-state').textContent = btn.textContent;
-    closeLocationModal();
-    // Simulate data refresh
-    roadAlert.parentElement.style.display = 'block';
-    alertText.textContent = `Jurisdiction switched to ${btn.textContent}`;
   });
 });
 
@@ -428,3 +477,8 @@ document.addEventListener('keydown', (e) => {
     notificationDropdown.classList.remove('open');
   }
 });
+
+// Initial Load
+initLocations();
+populateLaws();
+updateOnlineStatus();
