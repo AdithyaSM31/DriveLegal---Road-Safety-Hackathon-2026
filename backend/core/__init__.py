@@ -1,1 +1,2 @@
-# DriveLegal Core
+"""DriveLegal core package."""
+

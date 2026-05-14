@@ -7,9 +7,12 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from backend.core.embeddings import vector_store
+from backend.core.embeddings import get_vector_store
 
-DOCS_DIR = os.path.join(PROJECT_ROOT, "data", "documents")
+
+# IMPORTANT: documents live under backend/data/documents in this repo.
+DOCS_DIR = os.path.join(PROJECT_ROOT, "backend", "data", "documents")
+
 
 def build_vector_database():
     # Ensure source directory exists
@@ -35,12 +38,52 @@ def build_vector_database():
         if filename.endswith(".txt"):
             file_path = os.path.join(DOCS_DIR, filename)
             
-            with open(file_path, "r", encoding="utf-8") as f:
-                raw_text = f.read()
+            # Some “.txt” files may actually be PDFs renamed with .txt.
+            # Attempt UTF-8 read first; if it looks like a PDF header, skip for now.
+            with open(file_path, "rb") as f:
+                head = f.read(8)
+                if head.startswith(b"%PDF"):
+                    print(f"⚠️ Skipping '{filename}' because it appears to be a PDF (despite .txt extension).")
+                    continue
 
-            # Dynamic structural metadata generation 
+                f.seek(0)
+                raw_bytes = f.read()
+
+            raw_text = raw_bytes.decode("utf-8", errors="ignore")
+
+
+            # Dynamic structural metadata generation
             source_tag = filename.replace(".txt", "").upper()
-            jurisdiction_tag = "National" # Default fallback string
+
+            # Best-effort jurisdiction tagging from filename.
+            # Central laws remain National; state-specific docs can be tagged by name.
+            fn_upper = filename.upper()
+            if "MAHARASHTRA" in fn_upper:
+                jurisdiction_tag = "Maharashtra"
+            elif "KERALA" in fn_upper:
+                jurisdiction_tag = "Kerala"
+            elif "KARNATAKA" in fn_upper:
+                jurisdiction_tag = "Karnataka"
+            elif "TAMIL" in fn_upper:
+                jurisdiction_tag = "Tamil Nadu"
+            elif "TELANGANA" in fn_upper:
+                jurisdiction_tag = "Telangana"
+            elif "UTTARPRADESH" in fn_upper or "UTTAR PRADESH" in fn_upper:
+                jurisdiction_tag = "Uttar Pradesh"
+            elif "WESTBENGAL" in fn_upper or "WEST BENGAL" in fn_upper:
+                jurisdiction_tag = "West Bengal"
+            elif "PUNJAB" in fn_upper:
+                jurisdiction_tag = "Punjab"
+            elif "RAJASTHAN" in fn_upper:
+                jurisdiction_tag = "Rajasthan"
+            elif "HARYANA" in fn_upper:
+                jurisdiction_tag = "Haryana"
+            elif "GUJARAT" in fn_upper:
+                jurisdiction_tag = "Gujarat"
+            else:
+                # Central acts/rules/amendments are treated as National.
+                jurisdiction_tag = "National"
+
 
             # Split document text into windows
             individual_chunks = splitter.split_text(raw_text)
@@ -56,8 +99,10 @@ def build_vector_database():
     # 3. Batch commit to persistent database layer
     if chunks_text:
         print(f"\n📤 Writing {len(chunks_text)} entries to local ChromaDB collection...")
+        vector_store = get_vector_store()
         vector_store.add_texts(texts=chunks_text, metadatas=chunks_metadata)
         print("🏆 ChromaDB successfully populated and saved locally!")
+
     else:
         print("⚠️ No valid text documents found in data/documents/ to build indices from.")
 

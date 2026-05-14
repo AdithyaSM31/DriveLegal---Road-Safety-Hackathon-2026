@@ -31,14 +31,31 @@ def get_vector_store() -> Chroma:
     return _vector_store
 
 
-def similarity_search(query: str, top_k: int = 5) -> list[str]:
-    """Return raw page_content strings for best-matching chunks."""
+def similarity_search(
+    query: str,
+    top_k: int = 5,
+    jurisdiction: Optional[str] = None,
+) -> list[str]:
+    """Return raw page_content strings for best-matching chunks.
+
+    If jurisdiction is provided, filters Chroma by metadata['jurisdiction'].
+    """
     try:
-        results = get_vector_store().similarity_search(query, k=top_k)
+        vs = get_vector_store()
+        if jurisdiction:
+            # Chroma metadata filter
+            results = vs.similarity_search(
+                query,
+                k=top_k,
+                filter={"jurisdiction": jurisdiction},
+            )
+        else:
+            results = vs.similarity_search(query, k=top_k)
         return [doc.page_content for doc in results]
     except Exception as e:
         print(f"❌ Error during similarity search: {e}")
         return []
+
 
 
 if __name__ == "__main__":
