@@ -16,6 +16,9 @@
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js" defer></script>
 
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
   <!-- Design System -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -280,12 +283,16 @@
 
         <div class="grid-2">
           <div class="card">
-            <p class="card-title">Offence Distribution (National)</p>
-            <div class="skeleton-rect skeleton" style="height:200px;"></div>
+            <p class="card-title">Offence Distribution</p>
+            <div style="position: relative; height:200px; width:100%; display: flex; justify-content: center; align-items: center;">
+              <canvas id="offenceChart"></canvas>
+            </div>
           </div>
           <div class="card">
-            <p class="card-title">Accident-prone Hours</p>
-            <div class="skeleton-rect skeleton" style="height:200px;"></div>
+            <p class="card-title">Severity Breakdown</p>
+            <div style="position: relative; height:200px; width:100%; display: flex; justify-content: center; align-items: center;">
+              <canvas id="severityChart"></canvas>
+            </div>
           </div>
         </div>
       </section>

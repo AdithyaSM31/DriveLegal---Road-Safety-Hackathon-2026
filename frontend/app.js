@@ -482,3 +482,123 @@ document.addEventListener('keydown', (e) => {
 initLocations();
 populateLaws();
 updateOnlineStatus();
+
+// ── ANALYTICS CHARTS ──────────────────────────────────────────
+let offenceChartInstance = null;
+let severityChartInstance = null;
+
+async function initAnalytics() {
+  const offenceCanvas = document.getElementById('offenceChart');
+  const severityCanvas = document.getElementById('severityChart');
+  if (!offenceCanvas || !severityCanvas) return;
+
+  // Fallback Mock Data
+  let data = {
+    offences: {
+      labels: ['Speeding', 'No Helmet', 'Signal Jump', 'DUI', 'No Seatbelt'],
+      values: [420, 310, 250, 120, 180]
+    },
+    severity: {
+      labels: ['Minor', 'Moderate', 'Major', 'Critical'],
+      values: [60, 25, 10, 5]
+    }
+  };
+
+  try {
+    const res = await fetch('/api/analytics/summary');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.offences && json.severity) {
+        data = json;
+      }
+    }
+  } catch (err) {
+    console.warn('[DriveLegal] Using mock data for analytics. Fetch failed:', err);
+  }
+
+  // Theme colors from CSS
+  const style = getComputedStyle(document.documentElement);
+  const primary = style.getPropertyValue('--primary').trim() || '#3B82F6';
+  const success = style.getPropertyValue('--success').trim() || '#10B981';
+  const warning = style.getPropertyValue('--warning').trim() || '#F59E0B';
+  const danger = style.getPropertyValue('--danger').trim() || '#EF4444';
+  const textPrimary = style.getPropertyValue('--text-primary').trim() || '#F8FAFC';
+  const textMuted = style.getPropertyValue('--text-muted').trim() || '#64748B';
+  const borderCol = style.getPropertyValue('--border-bright').trim() || '#334155';
+
+  // Common options
+  Chart.defaults.color = textMuted;
+  Chart.defaults.font.family = "'Inter', sans-serif";
+
+  // 1. Offence Distribution (Bar Chart)
+  if (offenceChartInstance) offenceChartInstance.destroy();
+  offenceChartInstance = new Chart(offenceCanvas, {
+    type: 'bar',
+    data: {
+      labels: data.offences.labels,
+      datasets: [{
+        label: 'Reported Incidents',
+        data: data.offences.values,
+        backgroundColor: primary,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: borderCol, drawBorder: false },
+          ticks: { color: textMuted }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { color: textMuted }
+        }
+      }
+    }
+  });
+
+  // 2. Severity Breakdown (Doughnut Chart)
+  if (severityChartInstance) severityChartInstance.destroy();
+  severityChartInstance = new Chart(severityCanvas, {
+    type: 'doughnut',
+    data: {
+      labels: data.severity.labels,
+      datasets: [{
+        data: data.severity.values,
+        backgroundColor: [success, warning, danger, '#8B5CF6'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { color: textPrimary, usePointStyle: true, boxWidth: 8 }
+        }
+      }
+    }
+  });
+}
+
+window.addEventListener('load', () => {
+  if (typeof Chart !== 'undefined') {
+    initAnalytics();
+  } else {
+    const checkChart = setInterval(() => {
+      if (typeof Chart !== 'undefined') {
+        clearInterval(checkChart);
+        initAnalytics();
+      }
+    }, 100);
+  }
+});
