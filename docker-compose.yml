@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  drivelegal-app:
+    build: .
+    container_name: drivelegal-app
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the data directory to persist the SQLite database and ChromaDB across container restarts
+      - ./data:/app/data
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    restart: unless-stopped
