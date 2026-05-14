@@ -82,6 +82,14 @@ CREATE TABLE IF NOT EXISTS law_documents (
     effective_date TEXT,
     source_url TEXT
 );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS violations_fts USING fts5(
+    name,
+    description,
+    section_reference,
+    content='violations',
+    content_rowid='id'
+);
 """
 
 
@@ -374,6 +382,32 @@ async def export_all_fine_schedules() -> list[dict]:
                JOIN countries c ON c.id = j.country_id
                LEFT JOIN vehicle_classes vclass ON vclass.id = fs.vehicle_class_id
                ORDER BY c.name, j.name, vc.name, v.name"""
+        )
+        return [dict(r) for r in await cursor.fetchall()]
+    finally:
+        await db.close()
+# ────────────────────────── FTS5 Search ─────────────────────────────────────
+
+async def search_violations_fts(query: str) -> list[dict]:
+    """
+    Full-text search across violation name, description, and section reference.
+    Returns ranked results using FTS5.
+    """
+    db = await get_db()
+    try:
+        # Append * for prefix matching (e.g. "helmet" matches "helmets")
+        fts_query = f"{query}*"
+        cursor = await db.execute(
+            """SELECT v.id, v.name, v.description, v.section_reference, v.severity,
+                      vc.name AS category_name,
+                      rank
+               FROM violations_fts
+               JOIN violations v ON violations_fts.rowid = v.id
+               JOIN violation_categories vc ON vc.id = v.category_id
+               WHERE violations_fts MATCH ?
+               ORDER BY rank
+               LIMIT 20""",
+            (fts_query,),
         )
         return [dict(r) for r in await cursor.fetchall()]
     finally:

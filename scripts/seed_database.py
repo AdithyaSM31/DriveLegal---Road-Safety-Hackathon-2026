@@ -212,6 +212,10 @@ def seed(dry_run=False):
     print("=" * 40)
     print(f"\n[OK] Database seeded successfully!")
     print(f"     Path: {DATABASE_PATH}")
+    # ── Rebuild FTS5 index ─────────────────────────────────────────────
+    db.execute("INSERT INTO violations_fts(violations_fts) VALUES('rebuild')")
+    db.commit()
+    print("  FTS5 index rebuilt.")
     db.close()
 
 
