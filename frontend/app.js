@@ -8,6 +8,8 @@ const sidebarToggle = document.getElementById('sidebar-toggle');
 const notificationDropdown = document.getElementById('notification-dropdown');
 const notiToggle = document.getElementById('noti-toggle');
 
+let currentJurisdictionId = null;
+
 function switchView(viewId) {
   views.forEach(v => v.classList.remove('active'));
   document.getElementById(viewId)?.classList.add('active');
@@ -297,7 +299,9 @@ async function initLocations() {
             alertText.textContent = `Jurisdiction switched to ${btn.textContent}`;
           }
           
+          currentJurisdictionId = btn.dataset.id;
           populateLaws();
+          initAnalytics();
         });
       });
     }
@@ -342,34 +346,37 @@ async function initAnalytics() {
   console.log('[DriveLegal] Initializing analytics charts...');
   const offenceCanvas = document.getElementById('offenceChart');
   const severityCanvas = document.getElementById('severityChart');
-  if (!offenceCanvas || !severityCanvas) {
-      console.warn('[DriveLegal] Canvas elements not found for charts.');
-      return;
-  }
+  if (!offenceCanvas || !severityCanvas) return;
 
+  // Fallback Mock Data
   let data = {
-    offences: {
-      labels: ['Speeding', 'No Helmet', 'Signal Jump', 'DUI', 'No Seatbelt'],
-      values: [420, 310, 250, 120, 180]
-    },
-    severity: {
-      labels: ['Minor', 'Moderate', 'Major', 'Critical'],
-      values: [60, 25, 10, 5]
-    }
+    offences: { labels: ['No Data'], values: [0] },
+    severity: { labels: ['No Data'], values: [0] },
+    hud: { safety_index: '92%', risk_level: 'Low', traffic_density: 'Moderate' }
   };
 
   try {
-    const res = await fetch('/api/analytics/summary');
+    const url = currentJurisdictionId 
+      ? `/api/analytics/summary?jurisdiction_id=${currentJurisdictionId}`
+      : '/api/analytics/summary';
+      
+    const res = await fetch(url);
     if (res.ok) {
-      const json = await res.json();
-      console.log('[DriveLegal] Analytics live data:', json);
-      if (json.offences && json.severity) {
-        data = json;
-      }
+      data = await res.json();
+      console.log('[DriveLegal] Analytics live data:', data);
     }
   } catch (err) {
     console.warn('[DriveLegal] Using mock data for analytics. Fetch failed:', err);
   }
+
+  // Update HUD
+  const hudSafety = document.getElementById('hud-safety');
+  const hudRisk = document.getElementById('hud-risk');
+  const hudTraffic = document.getElementById('hud-traffic');
+
+  if (hudSafety) hudSafety.textContent = data.hud.safety_index;
+  if (hudRisk) hudRisk.textContent = data.hud.risk_level;
+  if (hudTraffic) hudTraffic.textContent = data.hud.traffic_density;
 
   const style = getComputedStyle(document.documentElement);
   const primary = style.getPropertyValue('--primary').trim() || '#3B82F6';

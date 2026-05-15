@@ -10,6 +10,6 @@ router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
 
 @router.get("/summary")
-async def analytics_summary():
+async def analytics_summary(jurisdiction_id: int = None):
     """Get summarized analytics for the dashboard charts."""
-    return await get_analytics_summary()
+    return await get_analytics_summary(jurisdiction_id)
