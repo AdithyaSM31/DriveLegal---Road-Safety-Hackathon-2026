@@ -19,8 +19,11 @@ COPY . .
 ENV PYTHONPATH=/app
 ENV PORT=8000
 
+# Make scripts executable
+RUN chmod +x scripts/entrypoint.sh
+
 # Expose the application port
 EXPOSE 8000
 
-# Command to run the application using uvicorn
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use entrypoint script to handle seeding/building and startup
+ENTRYPOINT ["/bin/bash", "scripts/entrypoint.sh"]
