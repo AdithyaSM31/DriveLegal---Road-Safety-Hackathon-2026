@@ -1,340 +1,174 @@
-/* ============================================================
-   DRIVELEGAL — app.js
-   PWA registration + App Shell interactivity + UI Overhaul
-   ============================================================ */
+import { queryOffline } from './js/offline.js';
 
-// ── IMPORTS (Offline Logic) ──────────────────────────────────
-import { queryOffline, syncOfflineData } from './js/offline.js';
+// ── NAVIGATION & UI STATE ──────────────────────────────────────
+const navItems = document.querySelectorAll('.nav-item, .bottom-nav-item');
+const views = document.querySelectorAll('.view');
+const sidebar = document.getElementById('main-sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const notificationDropdown = document.getElementById('notification-dropdown');
+const notiToggle = document.getElementById('noti-toggle');
 
-// ── SERVICE WORKER ────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('[DriveLegal] SW registered:', reg.scope);
-    } catch (err) {
-      console.warn('[DriveLegal] SW registration failed:', err);
-    }
+function switchView(viewId) {
+  views.forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId)?.classList.add('active');
+  
+  navItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.view === viewId);
   });
+
+  if (window.innerWidth < 1024) closeSidebar();
+  
+  if (viewId === 'view-laws') populateLaws();
+  if (viewId === 'view-analytics') initAnalytics();
 }
 
-// ── DOM REFS ──────────────────────────────────────────────────
-const sidebar        = document.getElementById('sidebar');
-const overlay        = document.getElementById('sidebar-overlay');
-const hamburgerBtn   = document.getElementById('hamburger-btn');
-const geoBtn         = document.getElementById('geo-btn');
-const locationState  = document.getElementById('location-state');
-const statusDot      = document.getElementById('status-dot');
-const statusText     = document.getElementById('status-text');
-const roadAlert      = document.getElementById('road-alert');
-const alertText      = document.getElementById('alert-text');
-const hudSpeed       = document.getElementById('hud-current-speed');
-const hudLimit       = document.getElementById('hud-speed-limit');
-const hudZone        = document.getElementById('hud-zone');
-const notificationBtn = document.getElementById('notification-btn');
-const notificationDropdown = document.getElementById('notification-dropdown');
+navItems.forEach(item => {
+  item.addEventListener('click', () => switchView(item.dataset.view));
+});
 
-// ── SIDEBAR (mobile) ──────────────────────────────────────────
-function openSidebar() {
-  sidebar.classList.add('open');
-  overlay.classList.add('open');
-  hamburgerBtn.setAttribute('aria-expanded', 'true');
-  overlay.setAttribute('aria-hidden', 'false');
+// Trigger buttons (e.g. hero buttons)
+document.querySelectorAll('[data-view-trigger]').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.viewTrigger));
+});
+
+function toggleSidebar() {
+  sidebar.classList.toggle('open');
 }
 
 function closeSidebar() {
   sidebar.classList.remove('open');
-  overlay.classList.remove('open');
-  hamburgerBtn.setAttribute('aria-expanded', 'false');
-  overlay.setAttribute('aria-hidden', 'true');
 }
 
-hamburgerBtn?.addEventListener('click', () => {
-  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-});
-overlay?.addEventListener('click', closeSidebar);
+sidebarToggle?.addEventListener('click', toggleSidebar);
 
-// ── TAB / VIEW SWITCHING ──────────────────────────────────────
-const navItems = document.querySelectorAll('.nav-item[data-view], .bottom-nav-item[data-view]');
-const views    = document.querySelectorAll('.view');
-
-function switchView(viewId) {
-  views.forEach(v => v.classList.remove('active'));
-  navItems.forEach(n => n.classList.remove('active'));
-
-  const targetView = document.getElementById(viewId);
-  const targetNavs = document.querySelectorAll(`[data-view="${viewId}"]`);
-
-  if (targetView) {
-    targetView.classList.add('active');
-    window.scrollTo(0, 0);
-  }
-  
-  targetNavs.forEach(n => {
-    n.classList.add('active');
-    if (n.classList.contains('nav-item')) n.setAttribute('aria-current', 'page');
-  });
-
-  closeSidebar();
-}
-
-navItems.forEach(btn => {
-  btn.addEventListener('click', () => switchView(btn.dataset.view));
-});
-
-// Quick Action Cards
-document.querySelectorAll('.quick-action-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const action = card.dataset.action;
-    if (action === 'calc') switchView('view-calculator');
-    if (action === 'laws') switchView('view-laws');
-    if (action === 'ai') switchView('view-ai');
-  });
-});
-
-// ── NOTIFICATIONS ─────────────────────────────────────────────
-notificationBtn?.addEventListener('click', (e) => {
+notiToggle?.addEventListener('click', (e) => {
   e.stopPropagation();
   notificationDropdown.classList.toggle('open');
 });
 
 document.addEventListener('click', () => {
-  notificationDropdown.classList.remove('open');
-  document.getElementById('law-modal').style.right = '-100%';
-  document.getElementById('modal-overlay').classList.remove('open');
+  notificationDropdown?.classList.remove('open');
 });
 
-notificationDropdown?.addEventListener('click', e => e.stopPropagation());
+// ── ONLINE / OFFLINE STATUS ──────────────────────────────────
+const offlineBanner = document.getElementById('offline-banner');
 
-// ── LIVE ALERT SIMULATION ─────────────────────────────────────
-const ALERTS = [
-  { text: '🚸 SCHOOL ZONE • Speed Limit: 25 km/h', type: 'warning' },
-  { text: '⚠️ Overspeeding Detected • Reduce speed immediately', type: 'danger' },
-  { text: '↩️ One-way road ahead', type: 'info' },
-  { text: '🟢 Route clear • Driving conditions normal', type: 'success' },
-  { text: '🚧 Roadwork on NH 44 • Expect minor delays', type: 'warning' }
-];
-
-let alertIndex = 0;
-function cycleAlerts() {
-  const alert = ALERTS[alertIndex];
-  roadAlert.className = `road-alert ${alert.type}`;
-  alertText.textContent = alert.text;
-  alertIndex = (alertIndex + 1) % ALERTS.length;
-}
-
-setInterval(cycleAlerts, 8000);
-cycleAlerts();
-
-document.getElementById('close-alert')?.addEventListener('click', () => {
-  roadAlert.parentElement.style.display = 'none';
-});
-
-// ── DRIVER HUD SIMULATION ─────────────────────────────────────
-let currentSpeed = 48;
-function simulateSpeed() {
-  const change = (Math.random() - 0.5) * 4;
-  currentSpeed = Math.max(0, Math.min(120, currentSpeed + change));
-  if (hudSpeed) hudSpeed.textContent = Math.round(currentSpeed);
-  
-  const limit = parseInt(hudLimit?.textContent || '50');
-  if (currentSpeed > limit) {
-    hudSpeed.style.color = 'var(--danger)';
-  } else {
-    hudSpeed.style.color = 'var(--primary)';
+function updateOnlineStatus() {
+  if (offlineBanner) {
+    offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
   }
 }
 
-setInterval(simulateSpeed, 1000);
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
 
-// ── LAW DETAILS MODAL ─────────────────────────────────────────
-const lawModal = document.getElementById('law-modal');
-const modalOverlay = document.getElementById('modal-overlay');
+// ── CHALLAN CALCULATOR ────────────────────────────────────────
+const btnCalc = document.getElementById('btn-calc');
+const calcResult = document.getElementById('calc-result');
 
-function openLawDetails(title, content) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = `
-    <p style="font-weight:700;margin-bottom:12px;color:var(--primary);">Motor Vehicles Act, 1988</p>
-    <p style="font-size:0.9rem;line-height:1.6;color:var(--text-secondary);">${content}</p>
-    <div class="divider"></div>
-    <div class="card" style="background:var(--bg-elevated);border-color:var(--primary-dim);">
-      <p style="font-size:0.75rem;font-weight:600;margin-bottom:8px;">STATE MODIFICATIONS</p>
-      <p style="font-size:0.8rem;color:var(--text-primary);">In Karnataka: Fine enhanced to ₹1,000 for first offence. Repeated offence leads to 3 months DL suspension.</p>
-    </div>
-  `;
-  lawModal.style.right = '0';
-  modalOverlay.classList.add('open');
-}
+btnCalc?.addEventListener('click', async () => {
+  const stateId = document.getElementById('select-state').value;
+  const violationId = document.getElementById('select-offence').value;
+  const isSubsequent = document.querySelector('input[name="freq"]:checked').value === "2";
 
-document.querySelectorAll('#laws-tbody tr').forEach(row => {
-  row.addEventListener('click', () => {
-    const section = row.cells[0].textContent;
-    const offence = row.cells[1].textContent;
-    openLawDetails(`${section} — ${offence}`, `This section deals with ${offence.toLowerCase()} under the MV Act. It mandates a fine of ${row.cells[2].textContent} and emphasizes road safety compliance.`);
-  });
-});
-
-document.getElementById('close-modal')?.addEventListener('click', () => {
-  lawModal.style.right = '-100%';
-  modalOverlay.classList.remove('open');
-});
-
-lawModal?.addEventListener('click', e => e.stopPropagation());
-
-// ── LAW BROWSER SEARCH ────────────────────────────────────────
-const lawSearch = document.getElementById('law-search');
-const lawRows   = document.querySelectorAll('#laws-tbody tr');
-
-lawSearch?.addEventListener('input', () => {
-  const q = lawSearch.value.toLowerCase().trim();
-  lawRows.forEach(row => {
-    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-});
-
-// ── CHALLAN CALCULATOR (API Integration) ─────────────────────
-const calcBtn = document.getElementById('calc-btn');
-const resultContent = document.getElementById('result-content');
-const placeholder = document.getElementById('result-placeholder');
-
-calcBtn?.addEventListener('click', async () => {
-  const state    = document.getElementById('select-state').value;
-  const vehicle  = document.getElementById('select-vehicle').value;
-  const offence  = document.getElementById('select-offence').value;
-  const repeat   = document.getElementById('select-repeat').value === 'repeat';
-  const juvenile = document.getElementById('check-juvenile').checked;
-
-  if (!offence || !state) {
-    alert('Please select both a state and an offence.');
+  if (!stateId || !violationId) {
+    alert("Please select both a state and an offence.");
     return;
   }
 
-  calcBtn.disabled = true;
-  calcBtn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i> Calculating...';
-
   try {
-    const response = await fetch('/api/challan/calculate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        state_id: state,
-        offence_id: offence,
-        vehicle_class: vehicle,
-        is_repeat: repeat,
-        is_juvenile: juvenile
-      })
-    });
+    const response = await fetch(`/api/challan/calculate?jurisdiction_id=${stateId}&violation_id=${violationId}&is_subsequent=${isSubsequent}`);
+    const data = await response.json();
 
-    if (!response.ok) throw new Error('Calculation failed');
+    document.getElementById('res-amount').textContent = data.fine_amount.toLocaleString();
+    document.getElementById('res-section').textContent = `§ ${data.section_reference}`;
+    document.getElementById('res-jail').textContent = data.imprisonment || 'None';
+    document.getElementById('res-license').textContent = data.license_action || 'None';
     
-    const result = await response.json();
-    
-    const resultAmount = document.getElementById('result-amount');
-    resultAmount.textContent = `₹${result.fine_amount.toLocaleString('en-IN')}`;
-    resultAmount.className = 'amount amount-lg';
-    
-    document.getElementById('result-offence-name').textContent = result.offence_name;
-    document.getElementById('result-section').textContent = result.section_reference;
-    document.getElementById('result-jail').textContent = result.imprisonment || '—';
-    document.getElementById('result-licence').textContent = result.licence_action || '—';
-
-    // Severity mapping
-    let severity = 'minor';
-    if (result.fine_amount > 5000 || juvenile) severity = 'critical';
-    else if (result.fine_amount > 2000) severity = 'major';
-    else if (result.fine_amount > 500) severity = 'moderate';
-
-    const card = document.getElementById('result-card');
-    let ribbon = card.querySelector('.sev-ribbon');
-    if (!ribbon) {
-      ribbon = document.createElement('div');
-      card.appendChild(ribbon);
-    }
-    ribbon.className = `sev-ribbon sev-${severity}`;
-
-    placeholder.style.display = 'none';
-    resultContent.style.display = 'block';
-    
-    locationState.textContent = document.getElementById('select-state').options[document.getElementById('select-state').selectedIndex].text;
+    calcResult.style.display = 'block';
+    calcResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (err) {
     console.error(err);
-    alert('Could not calculate fine. Using offline estimation.');
-  } finally {
-    calcBtn.disabled = false;
-    calcBtn.innerHTML = '<i class="ph ph-calculator-fill"></i> Calculate Fine';
+    alert("Failed to calculate. Using offline data...");
   }
 });
 
-// ── AI ASSISTANT (API Integration) ──────────────────────────
+// ── AI COPILOT ────────────────────────────────────────────────
 const aiInput = document.getElementById('ai-input');
-const chatMsgs = document.getElementById('chat-messages');
+const aiSend = document.getElementById('ai-send');
+const chatMessages = document.getElementById('chat-messages');
 
-function appendMessage(text, role = 'user', citations = []) {
-  const isUser = role === 'user';
-  const wrap = document.createElement('div');
-  wrap.className = 'chat-message-wrap';
-  wrap.style.cssText = `display:flex;gap:10px;align-items:flex-start;${isUser ? 'flex-direction:row-reverse;' : ''} margin-bottom: 12px;`;
+function appendMessage(text, isBot = false) {
+  const msg = document.createElement('div');
+  msg.className = `msg ${isBot ? 'bot-msg' : 'user-msg'}`;
   
-  let citationHtml = '';
-  if (citations.length > 0) {
-    citationHtml = `
-      <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:0.7rem; color:var(--text-muted);">
-        <strong>Sources:</strong> ${citations.map(c => `<span class="badge" style="font-size:0.65rem;">${c}</span>`).join(' ')}
-      </div>
-    `;
-  }
-
-  wrap.innerHTML = `
-    <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${isUser ? 'var(--accent)' : 'var(--primary-dim)'};">
-      <i class="ph ph-${isUser ? 'user' : 'robot'}" style="color:${isUser ? '#fff' : 'var(--primary)'};font-size:1rem;"></i>
-    </div>
-    <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;max-width:85%;">
-      <p style="font-size:0.875rem;line-height:1.6;color:var(--text-secondary); white-space: pre-wrap;">${text}</p>
-      ${citationHtml}
-    </div>
+  const content = isBot ? `
+    <div class="msg-avatar"><i class="ph ph-robot"></i></div>
+    <div class="msg-bubble">${text}</div>
+  ` : `
+    <div class="msg-bubble">${text}</div>
   `;
-  chatMsgs.appendChild(wrap);
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  
+  msg.innerHTML = content;
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-async function handleAiSend(text) {
-  const q = text || aiInput.value.trim();
-  if (!q) return;
-  
-  appendMessage(q, 'user');
-  aiInput.value = '';
+async function handleAISend() {
+  const query = aiInput.value.trim();
+  if (!query) return;
 
-  // Typing indicator
-  const typing = document.createElement('div');
-  typing.id = 'ai-typing';
-  typing.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted); margin-left:42px;">AI is thinking...</p>';
-  chatMsgs.appendChild(typing);
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  aiInput.value = '';
+  appendMessage(query, false);
+
+  // Show thinking
+  const thinkingId = 'thinking-' + Date.now();
+  const thinkingMsg = document.createElement('div');
+  thinkingMsg.className = 'msg bot-msg';
+  thinkingMsg.id = thinkingId;
+  thinkingMsg.innerHTML = `
+    <div class="msg-avatar"><i class="ph ph-robot"></i></div>
+    <div class="msg-bubble"><i class="ph ph-circle-notch animate-spin"></i> Analyzing traffic laws...</div>
+  `;
+  chatMessages.appendChild(thinkingMsg);
 
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch('/api/chat/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: q })
+      body: JSON.stringify({ question: query })
     });
-
     const data = await response.json();
-    typing.remove();
-    appendMessage(data.response, 'ai', data.citations);
+    
+    document.getElementById(thinkingId).remove();
+    
+    let formattedResponse = data.answer.replace(/\n/g, '<br>');
+    if (data.citations && data.citations.length > 0) {
+      const citations = [...new Set(data.citations)];
+      formattedResponse += `<br><br><small style="color:var(--text-muted);">
+        <strong>Sources:</strong> ${citations.map(c => `<span class="badge" style="font-size:0.65rem;">${c}</span>`).join(' ')}
+      </small>`;
+    }
+    
+    appendMessage(formattedResponse, true);
   } catch (err) {
-    typing.remove();
-    appendMessage("Sorry, I'm having trouble connecting to the legal database right now. Please try again later.", 'ai');
+    document.getElementById(thinkingId).remove();
+    appendMessage("I'm sorry, I'm having trouble connecting to the legal database right now. Please try again later.", true);
   }
 }
 
-document.getElementById('ai-send-btn')?.addEventListener('click', () => handleAiSend());
-aiInput?.addEventListener('keydown', e => { if (e.key === 'Enter') handleAiSend(); });
-
-document.querySelectorAll('#ai-suggestions button').forEach(btn => {
-  btn.addEventListener('click', () => handleAiSend(btn.textContent));
+aiSend?.addEventListener('click', handleAISend);
+aiInput?.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    handleAISend();
+  }
 });
 
-// ── LAW DATA & POPULATION (API/Offline) ──────────────────────
+// ── LAW BROWSER ──────────────────────────────────────────────
+const roadAlert = document.getElementById('sticky-alert-text');
+const alertText = document.getElementById('sticky-alert-text');
+
 async function populateLaws() {
   const tbody = document.getElementById('laws-tbody');
   if (!tbody) return;
@@ -351,14 +185,21 @@ async function populateLaws() {
       if (category) params.append('category', category);
       if (search) params.append('search', search);
       
+      console.log('[DriveLegal] Fetching laws with params:', params.toString());
       const response = await fetch(`/api/laws/browse?${params.toString()}`);
-      laws = await response.json();
+      if (!response.ok) throw new Error('API Error');
+      
+      const data = await response.json();
+      console.log('[DriveLegal] API Laws Data:', data);
+      laws = data.results || [];
     } else {
-      // Use Rishi's IndexedDB query
+      console.log('[DriveLegal] Using offline data for Law Browser');
       laws = await queryOffline({ search, severity: category });
     }
 
-    if (laws.length === 0) {
+    console.log('[DriveLegal] Final laws array:', laws);
+
+    if (!Array.isArray(laws) || laws.length === 0) {
       document.getElementById('laws-empty-state').style.display = 'block';
       tbody.innerHTML = '';
       return;
@@ -367,32 +208,53 @@ async function populateLaws() {
     document.getElementById('laws-empty-state').style.display = 'none';
     tbody.innerHTML = laws.map(l => `
       <tr class="law-row" data-law-id="${l.id}">
-        <td><span class="amount" style="font-size:0.85rem;">§ ${l.section_reference}</span></td>
-        <td>${l.violation_name}</td>
-        <td><span class="amount">₹${l.fine_amount_1 || 0}</span></td>
-        <td><span class="amount">₹${l.fine_amount_2 || 0}</span></td>
-        <td>${l.imprisonment || '—'}</td>
-        <td><span class="badge badge-${l.fine_amount_1 > 5000 ? 'red' : 'green'}">Active</span></td>
+        <td><span class="amount" style="font-size:0.85rem;">§ ${l.section_reference || 'N/A'}</span></td>
+        <td>${l.violation_name || l.name || 'Unknown'}</td>
+        <td><span class="amount">₹${l.first_offence_fine || 0}</span></td>
+        <td><span class="amount">₹${l.subsequent_offence_fine || 0}</span></td>
+        <td>${l.imprisonment_text || '—'}</td>
+        <td><span class="badge badge-${(l.first_offence_fine || 0) > 5000 ? 'red' : 'green'}">Active</span></td>
       </tr>
     `).join('');
 
-    // Attach listeners
     document.querySelectorAll('.law-row').forEach(row => {
       row.addEventListener('click', () => {
         const lawId = row.dataset.lawId;
         const law = laws.find(item => item.id == lawId);
-        openLawDetails(`§ ${law.section_reference} — ${law.violation_name}`, law.full_text || `Violation: ${law.violation_name}. Primary fine: ₹${law.fine_amount_1}.`);
+        if (law) {
+            openLawDetails(`§ ${law.section_reference} — ${law.violation_name}`, law.full_text || `Violation: ${law.violation_name}. Primary fine: ₹${law.first_offence_fine}.`);
+        }
       });
     });
 
   } catch (err) {
-    console.error(err);
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger);">Error loading laws. Check your connection.</td></tr>';
+    console.error('[DriveLegal] Law Browser Error:', err);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--danger);">Error loading laws. Check console.</td></tr>';
   }
 }
 
-// Category filter trigger
 document.getElementById('law-category')?.addEventListener('change', populateLaws);
+document.getElementById('law-search')?.addEventListener('input', debounce(populateLaws, 300));
+
+function debounce(func, timeout = 300){
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+function openLawDetails(title, content) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-content').innerHTML = `<p>${content}</p>`;
+  document.getElementById('law-modal').style.right = '0';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+document.getElementById('close-law-modal')?.addEventListener('click', () => {
+  document.getElementById('law-modal').style.right = '-100%';
+  document.getElementById('modal-overlay').classList.remove('open');
+});
 
 // ── LOCATION MODAL ────────────────────────────────────────────
 const locationHeader = document.getElementById('header-location');
@@ -403,39 +265,44 @@ const stateListContainer = document.getElementById('state-list');
 
 async function initLocations() {
   try {
+    console.log('[DriveLegal] Initializing locations...');
     const response = await fetch('/api/locations');
     const states = await response.json();
+    console.log('[DriveLegal] Locations data:', states);
     
-    // Populate Calculator Dropdown
+    if (!Array.isArray(states)) {
+        console.error('[DriveLegal] Locations is not an array:', states);
+        return;
+    }
+
     const calcSelect = document.getElementById('select-state');
     if (calcSelect) {
       calcSelect.innerHTML = '<option value="">— Select State —</option>' + 
         states.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     }
 
-    // Populate Modal List
     if (stateListContainer) {
       stateListContainer.innerHTML = states.map(s => `
         <button class="nav-item state-btn" data-id="${s.id}">${s.name}</button>
       `).join('');
 
-      // Attach click listeners
       document.querySelectorAll('.state-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.getElementById('location-state').textContent = btn.textContent;
           if (calcSelect) calcSelect.value = btn.dataset.id;
           closeLocationModal();
           
-          roadAlert.parentElement.style.display = 'block';
-          alertText.textContent = `Jurisdiction switched to ${btn.textContent}`;
+          if (roadAlert) {
+            roadAlert.parentElement.style.display = 'block';
+            alertText.textContent = `Jurisdiction switched to ${btn.textContent}`;
+          }
           
-          // Re-fetch laws for this state
           populateLaws();
         });
       });
     }
   } catch (err) {
-    console.error('Failed to fetch locations:', err);
+    console.error('[DriveLegal] Failed to fetch locations:', err);
   }
 }
 
@@ -467,6 +334,110 @@ stateSearch?.addEventListener('input', (e) => {
   });
 });
 
+// ── ANALYTICS CHARTS ──────────────────────────────────────────
+let offenceChartInstance = null;
+let severityChartInstance = null;
+
+async function initAnalytics() {
+  console.log('[DriveLegal] Initializing analytics charts...');
+  const offenceCanvas = document.getElementById('offenceChart');
+  const severityCanvas = document.getElementById('severityChart');
+  if (!offenceCanvas || !severityCanvas) {
+      console.warn('[DriveLegal] Canvas elements not found for charts.');
+      return;
+  }
+
+  let data = {
+    offences: {
+      labels: ['Speeding', 'No Helmet', 'Signal Jump', 'DUI', 'No Seatbelt'],
+      values: [420, 310, 250, 120, 180]
+    },
+    severity: {
+      labels: ['Minor', 'Moderate', 'Major', 'Critical'],
+      values: [60, 25, 10, 5]
+    }
+  };
+
+  try {
+    const res = await fetch('/api/analytics/summary');
+    if (res.ok) {
+      const json = await res.json();
+      console.log('[DriveLegal] Analytics live data:', json);
+      if (json.offences && json.severity) {
+        data = json;
+      }
+    }
+  } catch (err) {
+    console.warn('[DriveLegal] Using mock data for analytics. Fetch failed:', err);
+  }
+
+  const style = getComputedStyle(document.documentElement);
+  const primary = style.getPropertyValue('--primary').trim() || '#3B82F6';
+  const success = style.getPropertyValue('--success').trim() || '#10B981';
+  const warning = style.getPropertyValue('--warning').trim() || '#F59E0B';
+  const danger = style.getPropertyValue('--danger').trim() || '#EF4444';
+  const textPrimary = style.getPropertyValue('--text-primary').trim() || '#F8FAFC';
+  const textMuted = style.getPropertyValue('--text-muted').trim() || '#64748B';
+  const borderCol = style.getPropertyValue('--border-bright').trim() || '#334155';
+
+  if (typeof Chart === 'undefined') {
+      console.error('[DriveLegal] Chart.js is not loaded yet.');
+      return;
+  }
+
+  Chart.defaults.color = textMuted;
+  Chart.defaults.font.family = "'Inter', sans-serif";
+
+  if (offenceChartInstance) offenceChartInstance.destroy();
+  offenceChartInstance = new Chart(offenceCanvas, {
+    type: 'bar',
+    data: {
+      labels: data.offences.labels,
+      datasets: [{
+        label: 'Reported Incidents',
+        data: data.offences.values,
+        backgroundColor: primary,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: borderCol, drawBorder: false } },
+        x: { grid: { display: false, drawBorder: false } }
+      }
+    }
+  });
+
+  if (severityChartInstance) severityChartInstance.destroy();
+  severityChartInstance = new Chart(severityCanvas, {
+    type: 'doughnut',
+    data: {
+      labels: data.severity.labels,
+      datasets: [{
+        data: data.severity.values,
+        backgroundColor: [success, warning, danger, '#8B5CF6'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { color: textPrimary, usePointStyle: true, boxWidth: 8 }
+        }
+      }
+    }
+  });
+  console.log('[DriveLegal] Charts rendered successfully.');
+}
+
 // Global Escape Key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -474,11 +445,24 @@ document.addEventListener('keydown', (e) => {
     closeLocationModal();
     document.getElementById('law-modal').style.right = '-100%';
     document.getElementById('modal-overlay').classList.remove('open');
-    notificationDropdown.classList.remove('open');
+    notificationDropdown?.classList.remove('open');
   }
 });
 
 // Initial Load
-initLocations();
-populateLaws();
-updateOnlineStatus();
+document.addEventListener('DOMContentLoaded', () => {
+    initLocations();
+    populateLaws();
+    updateOnlineStatus();
+    
+    if (typeof Chart !== 'undefined') {
+        initAnalytics();
+    } else {
+        const checkChart = setInterval(() => {
+            if (typeof Chart !== 'undefined') {
+                clearInterval(checkChart);
+                initAnalytics();
+            }
+        }, 100);
+    }
+});
