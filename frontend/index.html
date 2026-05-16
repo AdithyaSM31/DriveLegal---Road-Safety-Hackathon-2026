@@ -86,6 +86,12 @@
         <button class="mobile-toggle" id="sidebar-toggle">
           <i class="ph ph-list"></i>
         </button>
+        <div class="mobile-logo" style="display:none; align-items:center; gap:8px;">
+          <div class="logo-icon" style="width:32px; height:32px; background:rgba(16,185,129,0.1); color:var(--primary); border:1px solid rgba(16,185,129,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+            <i class="ph ph-gavel"></i>
+          </div>
+          <span class="brand" style="font-weight:700; font-size:1.2rem; letter-spacing:-0.5px;">Drive<span style="color:var(--primary);">Legal</span></span>
+        </div>
         <div class="search-bar">
           <i class="ph ph-magnifying-glass"></i>
           <input type="text" placeholder="Search laws, sections, or rules...">
@@ -103,6 +109,10 @@
           <div class="action-btn" id="noti-toggle">
             <i class="ph ph-bell"></i>
             <span class="badge-dot"></span>
+          </div>
+          <div class="mobile-avatar" style="display:none; width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); overflow:hidden; margin-left:8px;">
+            <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User" style="width:100%;height:100%;object-fit:cover;">
+          </div>
             
             <!-- Notifications Dropdown -->
             <div class="notification-dropdown" id="notification-dropdown">
@@ -149,80 +159,92 @@
       <!-- ╚══════════════════════════════════════╝ -->
       <section class="view active" id="view-home" aria-labelledby="home-heading">
         <div class="greeting-section">
-          <h1 id="home-heading">Good evening, Adithya</h1>
-          <p>Drive safe. Drive legal.</p>
+          <h1 id="home-heading">Good Evening, Arjun 👋</h1>
+          <p>Drive safe. Stay legal.</p>
         </div>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid mobile-layout">
           <!-- Road Context Card -->
           <div class="context-card-v2">
-            <div class="card-label"><i class="ph ph-map-pin"></i> Road Context <span class="live-dot"></span> Live</div>
-            <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:6px;">MG Road, Bangalore</p>
-            <div style="display:flex;gap:32px;margin-top:16px;">
-              <div>
-                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Speed Limit</div>
-                <div class="speed-gauge"><span class="speed-num">50</span><span class="speed-unit">km/h</span></div>
+            <div class="card-label"><i class="ph ph-map-pin"></i> Road Context <span class="live-dot" style="margin-left:auto;"></span> <span style="font-size:0.7rem;color:var(--primary);margin-left:4px;">Live</span></div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;margin-bottom:16px;">MG Road, Bangalore, KA 01 AB 1234</p>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+              <div style="flex:1; text-align:center; border-right:1px solid var(--border);">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Traffic Density</div>
+                <div style="font-size:1.1rem;font-weight:600;color:var(--primary);margin-bottom:8px;">Moderate</div>
+                <div style="color:var(--primary);font-size:1.5rem;display:flex;justify-content:center;gap:2px;">
+                  <i class="ph-fill ph-car-profile" style="opacity:0.5;"></i>
+                  <i class="ph-fill ph-car-profile"></i>
+                  <i class="ph-fill ph-car-profile" style="opacity:0.5;"></i>
+                </div>
               </div>
-              <div>
-                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Traffic Density</div>
-                <div style="font-size:1.2rem;font-weight:700;color:var(--primary);margin-top:8px;">Moderate</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);">Moving well</div>
+              <div style="flex:1; text-align:center;">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Weather</div>
+                <div style="font-size:1.1rem;font-weight:600;color:var(--text-primary);margin-bottom:8px;">Clear</div>
+                <div style="color:var(--warning);font-size:1.5rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+                  <i class="ph-fill ph-moon"></i> <span style="color:var(--text-primary);font-size:1.1rem;font-weight:600;">28°C</span>
+                </div>
               </div>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+              <div style="color:var(--text-secondary);display:flex;align-items:center;gap:8px;"><i class="ph ph-info"></i> No rain expected</div>
+              <div style="color:var(--primary);cursor:pointer;display:flex;align-items:center;gap:4px;">View on Map <i class="ph ph-caret-right"></i></div>
             </div>
           </div>
 
-          <!-- Driver Score Card -->
+          <!-- Speed Gauge Card -->
           <div class="context-card-v2">
-            <div class="card-label"><i class="ph ph-user-circle"></i> Driver Score <span style="margin-left:auto;font-size:0.75rem;color:var(--primary);cursor:pointer;">View Details</span></div>
-            <div class="driver-score-circle">
-              <span class="score-num">87</span>
-              <span class="score-label">Great Driver!</span>
-            </div>
-            <p style="font-size:0.78rem;color:var(--text-secondary);text-align:center;margin-top:12px;">Keep up the good work. You're driving safer than 82% of other drivers.</p>
-            <div style="display:flex;justify-content:center;gap:8px;margin-top:8px;font-size:0.78rem;">
-              <span style="color:var(--primary);">&#8593; +6</span>
-              <span style="color:var(--text-muted);">vs last week</span>
-            </div>
-          </div>
-
-          <!-- Live Map Card -->
-          <div class="context-card-v2" style="background:linear-gradient(135deg, var(--bg-surface) 0%, #0d1a2d 100%);">
-            <div class="card-label"><i class="ph ph-map-trifold"></i> Live Map <span class="live-dot" style="margin-left:auto;"></span></div>
-            <div style="display:flex;align-items:center;justify-content:center;height:140px;color:var(--text-muted);font-size:0.85rem;">
-              <div style="text-align:center;">
-                <i class="ph ph-navigation-arrow" style="font-size:2.5rem;color:var(--primary);display:block;margin-bottom:8px;"></i>
-                Map integration ready
+            <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:24px;">
+              
+              <!-- Left Gauge -->
+              <div style="position:relative; width:120px; height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <!-- CSS half circle representation -->
+                <svg viewBox="0 0 100 50" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+                  <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(16,185,129,0.2)" stroke-width="8" stroke-linecap="round"/>
+                  <path d="M 10 50 A 40 40 0 0 1 70 20" fill="none" stroke="var(--primary)" stroke-width="8" stroke-linecap="round" filter="drop-shadow(0 0 4px var(--primary))"/>
+                </svg>
+                <div style="margin-top:16px; text-align:center; z-index:1;">
+                  <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px;">Your Speed</div>
+                  <div style="font-size:2.5rem;font-weight:800;color:var(--text-primary);line-height:1;">48</div>
+                  <div style="font-size:0.85rem;color:var(--text-primary);">km/h</div>
+                </div>
               </div>
+              
+              <!-- Right Limit -->
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="width:64px;height:64px;border-radius:50%;border:4px solid var(--danger);background:#fff;color:#000;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;margin-bottom:12px;box-shadow:0 0 15px rgba(239,68,68,0.5);">50</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Speed Limit</div>
+                <div style="font-size:1rem;font-weight:600;color:var(--text-primary);">50 km/h</div>
+              </div>
+
             </div>
-            <div style="display:flex;gap:16px;margin-top:8px;font-size:0.78rem;">
-              <div><span style="color:var(--text-muted);">Speed Limit</span> <strong>50 km/h</strong></div>
-              <div><span style="color:var(--text-muted);">Current</span> <strong style="color:var(--primary);">42 km/h</strong></div>
+            
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:var(--radius-md); padding:10px; text-align:center; color:var(--primary); font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <i class="ph ph-shield-check"></i> You're within the speed limit
             </div>
           </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="section-header"><h2>Quick Actions</h2></div>
+        <div class="section-header"><h2>Quick Actions</h2><span class="view-all-link">See All</span></div>
         <div class="quick-actions-grid">
-          <div class="qa-card" data-view-trigger="view-laws">
-            <i class="ph ph-magnifying-glass"></i>
-            <span class="qa-title">Check Violations</span>
-            <span class="qa-desc">View and resolve your violations</span>
+          <div class="qa-card" data-view-trigger="view-laws" style="align-items:center;text-align:center;">
+            <i class="ph ph-file-text" style="font-size:1.8rem;margin-bottom:4px;"></i>
+            <span class="qa-title" style="font-weight:500;font-size:0.82rem;">Check Fines</span>
           </div>
-          <div class="qa-card" data-view-trigger="view-calculator">
-            <i class="ph ph-calculator"></i>
-            <span class="qa-title">Calculate Fine</span>
-            <span class="qa-desc">Instant challan calculation</span>
+          <div class="qa-card" data-view-trigger="view-calculator" style="align-items:center;text-align:center;">
+            <i class="ph ph-calculator" style="font-size:1.8rem;margin-bottom:4px;"></i>
+            <span class="qa-title" style="font-weight:500;font-size:0.82rem;">Fine Calculator</span>
           </div>
-          <div class="qa-card" data-view-trigger="view-ai">
-            <i class="ph ph-chats-circle"></i>
-            <span class="qa-title">Ask AI</span>
-            <span class="qa-desc">Get instant legal answers</span>
+          <div class="qa-card" data-view-trigger="view-ai" style="align-items:center;text-align:center;">
+            <i class="ph ph-file-text" style="font-size:1.8rem;margin-bottom:4px;"></i>
+            <span class="qa-title" style="font-weight:500;font-size:0.82rem;">My Documents</span>
           </div>
-          <div class="qa-card" style="border-color:rgba(239,68,68,0.3);">
-            <i class="ph ph-warning-diamond" style="color:var(--danger);"></i>
-            <span class="qa-title" style="color:var(--danger);">Emergency</span>
-            <span class="qa-desc">Report hazards or traffic issues</span>
+          <div class="qa-card" style="align-items:center;text-align:center;">
+            <i class="ph ph-warning" style="font-size:1.8rem;margin-bottom:4px;color:var(--primary);"></i>
+            <span class="qa-title" style="font-weight:500;font-size:0.82rem;">Report Issue</span>
           </div>
         </div>
 
@@ -552,17 +574,21 @@
     <i class="ph ph-house"></i>
     <span>Home</span>
   </button>
-  <button class="bottom-nav-item" data-view="view-calculator">
-    <i class="ph ph-calculator"></i>
-    <span>Calc</span>
-  </button>
-  <button class="bottom-nav-item" data-view="view-ai">
-    <i class="ph ph-robot"></i>
-    <span>AI</span>
-  </button>
   <button class="bottom-nav-item" data-view="view-laws">
     <i class="ph ph-book-open"></i>
     <span>Laws</span>
+  </button>
+  <button class="bottom-nav-item" data-view="view-calculator">
+    <i class="ph ph-calculator"></i>
+    <span>Calculator</span>
+  </button>
+  <button class="bottom-nav-item" data-view="view-analytics">
+    <i class="ph ph-chart-bar"></i>
+    <span>Analytics</span>
+  </button>
+  <button class="bottom-nav-item" data-view="view-ai">
+    <i class="ph ph-robot"></i>
+    <span>AI Assistant</span>
   </button>
 </nav>
 
