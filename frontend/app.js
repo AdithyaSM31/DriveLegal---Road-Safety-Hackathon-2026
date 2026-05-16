@@ -219,12 +219,12 @@ async function populateLaws() {
     document.getElementById('laws-empty-state').style.display = 'none';
     tbody.innerHTML = laws.map(l => `
       <tr class="law-row" data-law-id="${l.id}">
-        <td><span class="amount" style="font-size:0.85rem;">§ ${l.section_reference || 'N/A'}</span></td>
+        <td><span class="section-link"><i class="ph ph-book-open" style="margin-right:4px;"></i> Sec ${l.section_reference || 'N/A'}</span></td>
         <td>${l.violation_name || l.name || 'Unknown'}</td>
-        <td><span class="amount">₹${l.first_offence_fine || 0}</span></td>
-        <td><span class="amount">₹${l.subsequent_offence_fine || 0}</span></td>
+        <td><span class="amount">${l.currency_symbol || '₹'}${l.first_offence_fine || 0}</span></td>
+        <td><span class="amount">${l.currency_symbol || '₹'}${l.subsequent_offence_fine || 0}</span></td>
         <td>${l.imprisonment_text || '—'}</td>
-        <td><span class="badge badge-${(l.first_offence_fine || 0) > 5000 ? 'red' : 'green'}">Active</span></td>
+        <td><span class="status-badge ${(l.first_offence_fine || 0) > 10000 ? 'status-special' : 'status-active'}"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;"></span> ${(l.first_offence_fine || 0) > 10000 ? 'Special' : 'Active'}</span></td>
       </tr>
     `).join('');
 
