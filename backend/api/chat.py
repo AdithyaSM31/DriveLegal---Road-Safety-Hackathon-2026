@@ -75,3 +75,9 @@ async def chat(req: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"RAG Pipeline Error: {str(e)}")
 
+
+# Alias endpoint for backwards compatibility with any frontend code using /ask
+@router.post("/ask", response_model=ChatResponse)
+async def chat_ask(req: ChatRequest):
+    """Alias for the main chat endpoint."""
+    return await chat(req)

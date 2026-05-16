@@ -135,20 +135,19 @@ async function handleAISend() {
   chatMessages.appendChild(thinkingMsg);
 
   try {
-    const response = await fetch('/api/chat/ask', {
+    const response = await fetch('/api/chat/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: query })
+      body: JSON.stringify({ message: query })
     });
     const data = await response.json();
     
     document.getElementById(thinkingId).remove();
     
-    let formattedResponse = data.answer.replace(/\n/g, '<br>');
+    let formattedResponse = data.reply.replace(/\n/g, '<br>');
     if (data.citations && data.citations.length > 0) {
-      const citations = [...new Set(data.citations)];
       formattedResponse += `<br><br><small style="color:var(--text-muted);">
-        <strong>Sources:</strong> ${citations.map(c => `<span class="badge" style="font-size:0.65rem;">${c}</span>`).join(' ')}
+        <strong>Sources:</strong> ${data.citations.map(c => `<span class="badge" style="font-size:0.65rem;">${typeof c === 'string' ? c : (c.source || '').substring(0, 80) + '...'}</span>`).join(' ')}
       </small>`;
     }
     
@@ -165,6 +164,16 @@ aiInput?.addEventListener('keypress', (e) => {
     e.preventDefault();
     handleAISend();
   }
+});
+
+// Wire up suggested query buttons in the chat view
+document.querySelectorAll('.suggested-queries button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (aiInput) {
+      aiInput.value = btn.textContent;
+      handleAISend();
+    }
+  });
 });
 
 // ── LAW BROWSER ──────────────────────────────────────────────

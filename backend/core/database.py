@@ -387,7 +387,6 @@ async def export_all_fine_schedules() -> list[dict]:
     finally:
         await db.close()
 
-<<<<<<< HEAD
 
 # ────────────────────────── FTS5 Search ─────────────────────────────────────
 
@@ -423,12 +422,6 @@ async def get_analytics_summary(jurisdiction_id: int = None) -> dict:
     """Get summarized analytics for the dashboard charts and HUD."""
     db = await get_db()
     try:
-=======
-async def get_analytics_summary(jurisdiction_id: int = None) -> dict:
-    """Get summarized analytics for the dashboard charts and HUD."""
-    db = await get_db()
-    try:
->>>>>>> 019336f (feat: finalized Aysha's Analytics track. Added localized HUD metrics and jurisdiction-aware safety scoring.)
         # 1. Top 5 Offences
         query = """SELECT v.name, COUNT(fs.id) as count
                    FROM fine_schedules fs
@@ -464,12 +457,7 @@ async def get_analytics_summary(jurisdiction_id: int = None) -> dict:
             "values": [row["count"] for row in severity_rows] if severity_rows else [0]
         }
 
-<<<<<<< HEAD
         # 3. HUD Metrics
-=======
-        # 3. HUD Metrics (Mocked but influenced by data)
-        # We calculate a safety score based on the ratio of minor vs critical violations
->>>>>>> 019336f (feat: finalized Aysha's Analytics track. Added localized HUD metrics and jurisdiction-aware safety scoring.)
         total_violations = sum(severity["values"])
         critical_count = next((v for l, v in zip(severity["labels"], severity["values"]) if l == "Critical"), 0)
         
