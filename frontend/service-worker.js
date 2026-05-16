@@ -1,4 +1,4 @@
-const CACHE_NAME = "drivelegal-cache-v3";
+const CACHE_NAME = "drivelegal-cache-v4";
 
 const APP_SHELL = [
   "/",

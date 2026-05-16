@@ -481,4 +481,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 100);
     }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => {
+                    console.log('[DriveLegal] SW Registered:', reg.scope);
+                    
+                    // Force update if a new version is found
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('[DriveLegal] New version available! Please refresh.');
+                                    // Optionally show a "Refresh for new version" toast
+                                }
+                            }
+                        };
+                    };
+                })
+                .catch(err => console.error('[DriveLegal] SW Registration failed:', err));
+        });
+    }
 });
+
