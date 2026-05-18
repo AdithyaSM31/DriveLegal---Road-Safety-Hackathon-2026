@@ -467,5 +467,6 @@ option{background:var(--bg-card);}
 }
 .user-msg .msg-bubble {
   background: rgba(16, 185, 129, 0.15) !important;
-  border-color: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #ffffff !important;
 }
