@@ -1,6 +1,18 @@
 // DriveLegal App v5
 "use strict";
-
+// ── LOCAL FALLBACK DATA ────────────────────────────────────
+const MV_ACT_LAWS = [
+  { id: 1, section_reference: "177", violation_name: "General penalty for traffic offences", first_offence_fine: 500, subsequent_offence_fine: 1500, imprisonment_text: null, category_name: "General" },
+  { id: 2, section_reference: "180", violation_name: "Allowing unauthorized person to drive", first_offence_fine: 5000, subsequent_offence_fine: 10000, imprisonment_text: null, category_name: "Documentation" },
+  { id: 3, section_reference: "181", violation_name: "Driving without a valid license", first_offence_fine: 5000, subsequent_offence_fine: 10000, imprisonment_text: null, category_name: "Documentation" },
+  { id: 4, section_reference: "183", violation_name: "Over-speeding", first_offence_fine: 1000, subsequent_offence_fine: 2000, imprisonment_text: null, category_name: "Speeding" },
+  { id: 5, section_reference: "184", violation_name: "Dangerous or rash driving", first_offence_fine: 1000, subsequent_offence_fine: 5000, imprisonment_text: "Up to 6 months", category_name: "Dangerous Driving" },
+  { id: 6, section_reference: "185", violation_name: "Drunken driving / substance influence", first_offence_fine: 10000, subsequent_offence_fine: 15000, imprisonment_text: "Up to 6 months", category_name: "Alcohol & Drugs" },
+  { id: 7, section_reference: "194B", violation_name: "Driving without seat belt", first_offence_fine: 1000, subsequent_offence_fine: 1000, imprisonment_text: null, category_name: "Safety Equipment" },
+  { id: 8, section_reference: "194D", violation_name: "Riding without helmet", first_offence_fine: 1000, subsequent_offence_fine: 1000, imprisonment_text: null, category_name: "Safety Equipment" },
+  { id: 9, section_reference: "194E", violation_name: "Not giving way to emergency vehicles", first_offence_fine: 10000, subsequent_offence_fine: 10000, imprisonment_text: null, category_name: "Emergency & Special" },
+  { id: 10, section_reference: "196", violation_name: "Driving without insurance", first_offence_fine: 2000, subsequent_offence_fine: 4000, imprisonment_text: "Up to 3 months", category_name: "Documentation" },
+];
 // ── STATE ──────────────────────────────────────────────────
 let currentView = "view-home";
 let currentJurisdictionId = null;
@@ -108,7 +120,26 @@ async function loadLaws() {
     updatePageInfo();
     renderPageBtns();
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Error loading laws. Is the server running?</td></tr>`;
+    console.warn("[DriveLegal] API unavailable, using local fallback data.");
+    const search = document.getElementById("law-search")?.value.toLowerCase() || "";
+    const category = document.getElementById("law-category")?.value || "";
+    allLaws = MV_ACT_LAWS.filter(law => {
+      const matchesSearch = !search ||
+        law.violation_name.toLowerCase().includes(search) ||
+        law.section_reference.toLowerCase().includes(search);
+      const matchesCategory = !category || law.category_name === category;
+      return matchesSearch && matchesCategory;
+    });
+    lawsTotal = allLaws.length;
+    if (!allLaws.length) {
+      tbody.innerHTML = "";
+      empty.style.display = "block";
+    } else {
+      renderLawsTable(allLaws);
+    }
+    updatePageInfo();
+    renderPageBtns();
+    showToast("Using offline law data — server unavailable", "warn");
   }
 }
 
@@ -265,6 +296,13 @@ async function loadLocations() {
   } catch (e) {
     console.warn("[DriveLegal] Could not load location data:", e.message);
   }
+  // Populate law category filter
+    const catEl = document.getElementById("law-category");
+    if (catEl) {
+      const categories = [...new Set(MV_ACT_LAWS.map(l => l.category_name))];
+      catEl.innerHTML = `<option value="">All Categories</option>` +
+        categories.map(c => `<option value="${c}">${c}</option>`).join("");
+    }
 }
 
 // Calculator
