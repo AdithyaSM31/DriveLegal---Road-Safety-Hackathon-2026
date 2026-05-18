@@ -528,9 +528,65 @@ function initBeams() {
   draw();
 }
 
+// ── GEOLOCATION & REVERSE GEOCODING ────────────────────────
+function getLiveLocation() {
+  const addrEl = document.querySelector('.ctx-addr');
+  if (!addrEl) return;
+
+  if (!navigator.geolocation) {
+    showToast('Geolocation is not supported by your browser', 'warn');
+    return;
+  }
+
+  addrEl.innerHTML = '<i class="fas fa-spinner spin"></i> Retrieving location...';
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      
+      window.currentLat = latitude;
+      window.currentLon = longitude;
+
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        
+        const road = data.address.road || data.address.suburb || '';
+        const city = data.address.city || data.address.town || data.address.county || 'India';
+        const stateCode = data.address.state || '';
+        
+        let addrStr = '';
+        if (road) addrStr += road;
+        if (city) addrStr += (addrStr ? ', ' : '') + city;
+        if (stateCode) addrStr += (addrStr ? ', ' : '') + stateCode;
+        
+        if (!addrStr) addrStr = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+
+        addrEl.textContent = addrStr;
+        showToast('Location updated successfully!', 'info');
+
+        if (typeof window.onLocationFound === 'function') {
+          window.onLocationFound(latitude, longitude);
+        }
+      } catch (err) {
+        console.warn('Nominatim reverse geocoding failed:', err.message);
+        addrEl.textContent = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+      }
+    },
+    (error) => {
+      console.warn('Geolocation failed or access denied:', error.message);
+      addrEl.textContent = 'MG Road, Bangalore, Karnataka (Location Access Denied)';
+      showToast('Could not retrieve live GPS coordinates.', 'warn');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
 // ── INIT ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadLocations();
+  getLiveLocation();
   initBeams();
 
   const waitChart = setInterval(() => {
