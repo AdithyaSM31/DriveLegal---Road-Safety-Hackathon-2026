@@ -1,81 +1,22 @@
-const CACHE_NAME = "drivelegal-cache-v4";
+const CACHE = 'drivelegal-v7';
+const ASSETS = ['/', '/index.html', '/styles.css?v=7', '/app.js?v=7', '/manifest.json'];
 
-const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/manifest.json",
-  "/js/offline.js",
-  "/js/api.js",
-];
-
-// INSTALL EVENT
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("Caching App Shell");
-      return cache.addAll(APP_SHELL);
-    }),
-  );
-
-  self.skipWaiting();
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 
-// ACTIVATE EVENT
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log("Deleting old cache:", cache);
-            return caches.delete(cache);
-          }
-        }),
-      );
-    }),
-  );
-
-  self.clients.claim();
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
-// FETCH EVENT
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-
-  // API CALLS -> NETWORK FIRST
-  if (request.url.includes("/api/")) {
-    event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, networkResponse.clone());
-            return networkResponse;
-          });
-        })
-        .catch(() => {
-          return caches.match(request);
-        }),
-    );
-
+self.addEventListener('fetch', e => {
+  if (e.request.url.includes('/api/')) {
+    e.respondWith(fetch(e.request).catch(() => new Response(JSON.stringify({ error: 'offline' }), { headers: { 'Content-Type': 'application/json' } })));
     return;
   }
-
-  // STATIC ASSETS -> STALE WHILE REVALIDATE
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
-        .then((networkResponse) => {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, networkResponse.clone());
-          });
-
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    }),
-  );
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+    const clone = res.clone();
+    caches.open(CACHE).then(c => c.put(e.request, clone));
+    return res;
+  })));
 });
