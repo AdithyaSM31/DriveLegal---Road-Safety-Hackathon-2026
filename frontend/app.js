@@ -550,6 +550,35 @@ function appendMsg(text, isBot = false) {
 
 async function queryLegalLLM(prompt) {
   const token = "hf_xxxxxxxxxxxxxxxxxxxxxxxx";
+  const cleanedPrompt = prompt.toLowerCase();
+
+  const isPlaceholderToken = !token || token.includes("xxxx");
+  const isOffline = !navigator.onLine;
+
+  if (isPlaceholderToken || isOffline) {
+    console.log("[DriveLegal AI] Running in local offline smart fallback mode...");
+    
+    if (cleanedPrompt.includes("helmet")) {
+      return "Under Section 129 of the Motor Vehicles Act, 1988, wearing a protective helmet is strictly mandatory for both the rider and the pillion passenger. Riding without a helmet attracts a fine of ₹1,000 and can result in the disqualification of your driving license for a period of up to 3 months.";
+    }
+    if (cleanedPrompt.includes("speed") || cleanedPrompt.includes("overspeed")) {
+      return "Under Section 183 of the Motor Vehicles Act, 1988, driving a vehicle at a speed exceeding the maximum speed limit is a punishable offence. For Light Motor Vehicles (LMVs/cars), the fine is ₹1,000 to ₹2,000 for the first offence, whereas for Medium/Heavy passenger or goods vehicles, it is ₹2,000 to ₹4,000.";
+    }
+    if (cleanedPrompt.includes("drunk") || cleanedPrompt.includes("alcohol") || cleanedPrompt.includes("drink")) {
+      return "Under Section 185 of the Motor Vehicles Act, 1988, driving under the influence of alcohol (exceeding 30 mg per 100 ml of blood) or drugs is a severe offence. The first offence is punishable with a fine of up to ₹10,000 and/or imprisonment for up to 6 months.";
+    }
+    if (cleanedPrompt.includes("signal") || cleanedPrompt.includes("red light")) {
+      return "Jumping a red light or violating traffic signals falls under Section 184 (Dangerous Driving) of the Motor Vehicles Act, 1988. It attracts a fine of ₹1,000 to ₹5,000 and/or imprisonment of 6 months to 1 year, along with potential license suspension.";
+    }
+    
+    return `[Offline Copilot Mode] I'm currently running in offline backup mode. For deep search, please ensure you are online and have configured a valid Hugging Face Access Token. 
+
+You can ask me about:
+• Helmet laws and fines
+• Speed limit violations
+• Drunk driving penalties
+• Traffic signal jumping rules`;
+  }
 
   const systemContext =
     "You are a professional traffic law assistant in India. Give precise advice according to the Indian Motor Vehicles Act, 1988. Keep it brief.";
