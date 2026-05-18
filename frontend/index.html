@@ -2,689 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>DriveLegal — India's Road Traffic Law Assistant</title>
-  <meta name="description" content="Know your rights on Indian roads. Instant challan calculator, section-by-section law browser, and AI-powered legal assistant — available offline.">
-  <meta name="theme-color" content="#0A0E17">
-  <link rel="manifest" href="/manifest.json">
-
-  <!-- Fonts -->
+  <meta name="description" content="Know your rights on Indian roads. Instant challan calculator, law browser, and AI-powered legal assistant.">
+  <meta name="theme-color" content="#070a0f">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Phosphor Icons -->
-  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js" defer></script>
-
-  <!-- Design System -->
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
+<canvas id="beams-canvas"></canvas>
+
 <div class="app-container">
 
-  <!-- Offline Banner -->
-  <div id="offline-banner" style="display:none; background:var(--danger); color:white; text-align:center; padding:8px; font-size:0.8rem; font-weight:700; z-index:1000; position:fixed; top:0; left:0; right:0;">
-    <i class="ph ph-wifi-slash"></i> YOU ARE OFFLINE — Using cached law database
-  </div>
-
-  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
-  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
-
-    <!-- Logo -->
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-icon" aria-hidden="true">⚖️</div>
-      <span class="sidebar-logo-text">Drive<span>Legal</span></span>
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fas fa-shield-halved"></i></div>
+      <div class="brand-text">Drive<span>Legal</span></div>
     </div>
-
-    <!-- Nav -->
-      <p class="nav-label">Dashboard</p>
-      
-      <button class="nav-item active" id="nav-home" data-view="view-home">
-        <i class="ph ph-house"></i>
-        Assistant Home
-      </button>
-
-      <button class="nav-item" id="nav-analytics" data-view="view-analytics">
-        <i class="ph ph-chart-bar"></i>
-        Road Analytics
-      </button>
-
-      <p class="nav-label" style="margin-top:16px;">Tools</p>
-
-      <button class="nav-item" id="nav-calculator" data-view="view-calculator">
-        <i class="ph ph-calculator"></i>
-        Challan Calculator
-        <span class="nav-badge">NEW</span>
-      </button>
-
-      <button class="nav-item" id="nav-laws" data-view="view-laws">
-        <i class="ph ph-book-open-text"></i>
-        Law Browser
-      </button>
-
-      <button class="nav-item" id="nav-ai" data-view="view-ai">
-        <i class="ph ph-robot"></i>
-        AI Assistant
-        <span class="nav-badge">BETA</span>
-      </button>
-
-      <p class="nav-label" style="margin-top:16px;">System</p>
-
-      <button class="nav-item" id="nav-vehicles" data-view="view-vehicles">
-        <i class="ph ph-car"></i>
-        My Vehicles
-      </button>
-
-      <button class="nav-item" id="nav-settings" data-view="view-settings">
-        <i class="ph ph-gear"></i>
-        Settings
-      </button>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main Menu</div>
+      <button class="nav-btn active" data-view="view-home"><i class="fas fa-house"></i><span>Dashboard</span></button>
+      <button class="nav-btn" data-view="view-laws"><i class="fas fa-book-open"></i><span>Traffic Laws</span></button>
+      <button class="nav-btn" data-view="view-calculator"><i class="fas fa-calculator"></i><span>Fine Calculator</span></button>
+      <button class="nav-btn" data-view="view-analytics"><i class="fas fa-chart-line"></i><span>Road Analytics</span></button>
+      <button class="nav-btn" data-view="view-ai"><i class="fas fa-robot"></i><span>AI Assistant</span></button>
     </nav>
-
-    <!-- Offline Status -->
-    <div class="offline-status" id="offline-status" role="status" aria-live="polite">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">Online · Laws synced</span>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="user-avatar">AS</div><div><div class="user-name">Adithya SM</div></div></div>
     </div>
-
   </aside>
 
-  <!-- Mobile overlay -->
-  <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <!-- ── MAIN WRAPPER ────────────────────────────────────── -->
+  <!-- ═══ MAIN ═══ -->
   <div class="main-wrapper">
 
-    <!-- Top Header -->
-    <header class="top-header" role="banner">
-
-      <div class="header-left">
-        <!-- Hamburger (mobile) -->
-        <button class="hamburger btn btn-ghost btn-sm" id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
-          <i class="ph ph-list" style="font-size:1.25rem;"></i>
-        </button>
-
-        <!-- Location breadcrumb -->
-        <div class="header-location" id="header-location" aria-label="Current jurisdiction" style="cursor:pointer;">
-          <i class="ph ph-map-pin"></i>
-          <span class="location-crumb">India</span>
-          <span class="location-sep">›</span>
-          <span class="location-crumb" id="location-state">All States</span>
-          <i class="ph ph-caret-down" style="font-size:0.7rem;margin-left:4px;"></i>
-        </div>
+    <!-- Mobile Header -->
+    <header class="mobile-header" id="mobile-header">
+      <div class="mh-left">
+        <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="mh-brand"><div class="brand-icon-sm"><i class="fas fa-shield-halved"></i></div><span>Drive<span class="accent">Legal</span></span></div>
       </div>
-
-      <div class="header-right">
-        <!-- Geo Toggle -->
-        <button class="geo-toggle" id="geo-btn" aria-pressed="false" title="Use my location">
-          <i class="ph ph-navigation-arrow"></i>
-          <span>Detect Location</span>
-        </button>
-
-        <!-- Notifications -->
-        <div style="position:relative;">
-          <button class="btn btn-ghost btn-sm" id="notification-btn" aria-label="Notifications">
-            <i class="ph ph-bell" style="font-size:1.25rem;"></i>
-            <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--bg-surface);"></span>
-          </button>
-
-          <div class="notification-dropdown" id="notification-dropdown">
-            <div class="noti-header">
-              <span style="font-weight:700;font-size:0.9rem;">Notifications</span>
-              <button class="btn btn-ghost btn-sm" style="font-size:0.7rem;">Mark all read</button>
-            </div>
-            <div class="noti-list">
-              <div class="noti-item">
-                <div class="noti-icon" style="background:var(--primary-dim);"><i class="ph ph-shield-check" style="color:var(--primary);"></i></div>
-                <div class="noti-content">
-                  <p><strong>Offline sync completed</strong>. 2,400 laws updated for Karnataka.</p>
-                  <span class="noti-time">2 mins ago</span>
-                </div>
-              </div>
-              <div class="noti-item">
-                <div class="noti-icon" style="background:rgba(239,68,68,0.1);"><i class="ph ph-warning" style="color:var(--danger);"></i></div>
-                <div class="noti-content">
-                  <p><strong>New traffic rule</strong>: Helmet fine in Kerala increased to ₹1,000.</p>
-                  <span class="noti-time">1 hour ago</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="mh-right">
+        <button class="icon-btn"><i class="fas fa-bell"></i><span class="noti-dot"></span></button>
+        <div class="avatar-sm">AS</div>
       </div>
-
     </header>
 
-    <!-- Sticky Alert Bar -->
-    <div class="sticky-alert-container">
-      <div class="road-alert info" id="road-alert">
-        <i class="ph ph-info"></i>
-        <span id="alert-text">Scanning road conditions...</span>
-        <i class="ph ph-x dismiss-alert" id="close-alert"></i>
-      </div>
-    </div>
+    <div class="content-area" id="content-area">
 
-    <!-- ── CONTENT AREA ────────────────────────────────── -->
-    <main id="main-content" class="content-area" role="main">
-
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: HOME DASHBOARD (NEW)       ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
+      <!-- ═══ DASHBOARD ═══ -->
       <section class="view active" id="view-home">
-        
-        <div class="hero-grid">
-          <!-- Context Card -->
-          <div class="card context-card">
-            <div class="sev-ribbon sev-minor"></div>
-            <div class="context-bg-map" style="width:50%; opacity:0.3; border-radius:0 0 var(--radius-lg) 0; overflow:hidden;">
-              <img src="map-preview.png" alt="Road Map" style="width:100%; height:100%; object-fit:cover;">
-            </div>
-            
-            <p class="nav-label" style="margin-top:0;">Current Road Context</p>
-            <h2 style="font-size:1.5rem;margin-bottom:8px;" id="home-road-name">NH 44 • Kazhakkoottam</h2>
-            <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:20px;">
-              <i class="ph ph-navigation-arrow-fill" style="color:var(--primary);"></i> 
-              Heading North • Accuracy: ±12m
-            </p>
+        <div class="greeting"><h1 id="greeting-text">Good Evening, Arjun 👋</h1><p>Drive safe. Stay legal.</p></div>
 
-            <div class="grid-3">
-              <div class="hud-item" style="flex-direction:column;align-items:flex-start;">
-                <span class="hud-label">Speed Limit</span>
-                <span class="hud-value" style="font-size:1.25rem;">60 km/h</span>
-              </div>
-              <div class="hud-item" style="flex-direction:column;align-items:flex-start;">
-                <span class="hud-label">Traffic</span>
-                <span class="hud-value" style="font-size:1.25rem;color:var(--warning);">Moderate</span>
-              </div>
-              <div class="hud-item" style="flex-direction:column;align-items:flex-start;">
-                <span class="hud-label">Risk Level</span>
-                <span class="hud-value" style="font-size:1.25rem;color:var(--primary);">Low</span>
-              </div>
-            </div>
+        <div class="ctx-card">
+          <div class="ctx-top">
+            <div class="ctx-title-row"><div class="ctx-pin"><i class="fas fa-location-dot"></i></div><div><div class="ctx-title">Road Context</div><div class="ctx-addr">MG Road, Bangalore, KA 01 AB 1234</div></div></div>
+            <span class="live-badge"><span class="live-dot"></span> Live</span>
           </div>
-
-          <!-- Quick Stats -->
-          <div class="card">
-            <p class="card-title">Driver Score</p>
-            <div style="text-align:center;padding:10px 0;">
-              <div style="font-size:2.5rem;font-weight:800;color:var(--primary);">84</div>
-              <p style="font-size:0.75rem;color:var(--text-muted);">Good Standing</p>
-            </div>
-            <div class="divider" style="margin:12px 0;"></div>
-            <div style="font-size:0.75rem;display:flex;justify-content:space-between;">
-              <span style="color:var(--text-secondary);">Last Offence</span>
-              <span style="color:var(--text-primary);">None</span>
-            </div>
+          <div class="ctx-stats">
+            <div class="ctx-stat"><div class="stat-label">Traffic Density</div><div class="stat-val primary">Moderate</div><div class="traffic-cars"><i class="fas fa-car-side"></i><i class="fas fa-car-side"></i><i class="fas fa-car-side"></i></div></div>
+            <div class="ctx-stat"><div class="stat-label">Weather</div><div class="stat-val">Clear</div><div class="weather-row"><i class="fas fa-cloud-moon"></i> 28°C</div></div>
           </div>
+          <div class="ctx-foot"><span><i class="fas fa-info-circle"></i> No rain expected</span><a class="ctx-link">View on Map <i class="fas fa-chevron-right"></i></a></div>
         </div>
 
-        <p class="nav-label" style="margin-bottom:12px;">Quick Actions</p>
-        <div class="quick-action-grid">
-          <div class="quick-action-card" data-action="calc">
-            <i class="ph ph-calculator"></i>
-            <span>Calculate Fine</span>
-          </div>
-          <div class="quick-action-card" data-action="laws">
-            <i class="ph ph-book-open"></i>
-            <span>Browse Laws</span>
-          </div>
-          <div class="quick-action-card" data-action="ai">
-            <i class="ph ph-chat-centered-dots"></i>
-            <span>Ask AI</span>
-          </div>
-          <div class="quick-action-card" data-action="emergency">
-            <i class="ph ph-phone-call" style="color:var(--danger);"></i>
-            <span style="color:var(--danger);">Emergency</span>
-          </div>
-        </div>
-
-        <div style="margin-top:32px;">
-          <p class="nav-label" style="margin-bottom:12px;">Recent Updates</p>
-          <div class="card" style="padding:0;">
-            <div class="noti-item">
-              <div class="noti-icon" style="background:var(--primary-dim);"><i class="ph ph-newspaper" style="color:var(--primary);"></i></div>
-              <div class="noti-content">
-                <p><strong>New Motor Vehicle Amendment (2024)</strong>: Section 194 now includes higher penalties for specific commercial vehicles.</p>
-                <span class="noti-time">Today</span>
-              </div>
+        <div class="speed-card">
+          <div class="speed-row">
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" viewBox="0 0 160 160"><circle cx="80" cy="80" r="68" fill="none" stroke="#1a2332" stroke-width="10"/><circle class="gauge-arc" cx="80" cy="80" r="68" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-dasharray="320 108" stroke-dashoffset="108" stroke-linecap="round" transform="rotate(-126 80 80)"/><defs><linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/></linearGradient></defs></svg>
+              <div class="gauge-text"><small>Your Speed</small><div class="gauge-num">48</div><div class="gauge-unit">km/h</div></div>
             </div>
+            <div class="limit-sign"><div class="limit-circle"><span>50</span></div><div class="limit-label">Speed Limit</div><div class="limit-val">50 km/h</div></div>
           </div>
+          <div class="speed-status safe"><i class="fas fa-circle-check"></i> You're within the speed limit</div>
         </div>
 
-      </section>
-
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: ROAD ANALYTICS (NEW)       ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
-      <section class="view" id="view-analytics" aria-labelledby="analytics-heading">
-        <div class="page-header">
-          <h1 id="analytics-heading">Road Analytics</h1>
-          <p>Real-time traffic density and safety metrics for your current route.</p>
+        <div class="sec-header"><h2>Quick Actions</h2><a class="see-all">See All</a></div>
+        <div class="qa-grid">
+          <button class="qa-card" data-view-trigger="view-laws"><div class="qa-icon"><i class="fas fa-file-lines"></i></div><span>Check Fines</span></button>
+          <button class="qa-card" data-view-trigger="view-calculator"><div class="qa-icon"><i class="fas fa-calculator"></i></div><span>Fine Calculator</span></button>
+          <button class="qa-card"><div class="qa-icon"><i class="fas fa-folder-open"></i></div><span>My Documents</span></button>
+          <button class="qa-card"><div class="qa-icon"><i class="fas fa-triangle-exclamation"></i></div><span>Report Issue</span></button>
         </div>
 
-        <div class="grid-3" style="margin-bottom: 24px;">
-          <div class="card">
-            <p class="hud-label">Safety Index</p>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--primary);">High (92%)</div>
-          </div>
-          <div class="card">
-            <p class="hud-label">Accident Zone</p>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--success);">Low Risk</div>
-          </div>
-          <div class="card">
-            <p class="hud-label">Traffic Density</p>
-            <div style="font-size:1.5rem;font-weight:700;color:var(--warning);">Moderate</div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="card">
-            <p class="card-title">Offence Distribution (National)</p>
-            <div class="skeleton-rect skeleton" style="height:200px;"></div>
-          </div>
-          <div class="card">
-            <p class="card-title">Accident-prone Hours</p>
-            <div class="skeleton-rect skeleton" style="height:200px;"></div>
-          </div>
+        <div class="sec-header"><h2>Recent Alerts</h2><a class="see-all">View All</a></div>
+        <div class="alert-row">
+          <div class="alert-icon-wrap"><i class="fas fa-video"></i></div>
+          <div class="alert-body"><div class="alert-title">Speed Camera Ahead</div><div class="alert-sub">Old Airport Road, Bangalore</div></div>
+          <div class="alert-dist">200 m <i class="fas fa-chevron-right"></i></div>
         </div>
       </section>
 
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: CHALLAN CALCULATOR          ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
-      <section class="view" id="view-calculator" aria-labelledby="calc-heading">
-        <!-- (Calculator content remains same) -->
-
-        <div class="page-header">
-          <h1 id="calc-heading">Challan Calculator</h1>
-          <p>Select your state and offence to instantly see the exact fine amount under the Motor Vehicles Act.</p>
+      <!-- ═══ LAW BROWSER ═══ -->
+      <section class="view" id="view-laws">
+        <div class="view-top">
+          <div class="vt-left"><div class="vt-icon"><i class="fas fa-shield-halved"></i></div><div><h1>Traffic Laws</h1><p>Explore Indian traffic laws, fines and penalties</p></div></div>
+          <div class="vt-right"><div class="info-pill"><i class="fas fa-info-circle"></i> As per Motor Vehicles Act, 1988<br><small>Last updated: May 2024</small></div><button class="btn-outline" id="btn-download-laws"><i class="fas fa-download"></i> Download</button></div>
         </div>
-
-        <div class="grid-2" style="gap: 24px; align-items: start;">
-
-          <!-- Input Card -->
-          <div class="card">
-            <p class="card-title">Offence Details</p>
-
-            <div class="form-group">
-              <label class="form-label" for="select-state">State / UT</label>
-              <select class="form-select" id="select-state" aria-label="Select state">
-                <option value="">— Select State —</option>
-                <option value="KA">Karnataka</option>
-                <option value="MH">Maharashtra</option>
-                <option value="DL">Delhi</option>
-                <option value="TN">Tamil Nadu</option>
-                <option value="UP">Uttar Pradesh</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="select-vehicle">Vehicle Class</label>
-              <select class="form-select" id="select-vehicle">
-                <option value="2w">2-Wheeler</option>
-                <option value="lmv" selected>Car (LMV)</option>
-                <option value="hgv">Heavy Vehicle (HGV)</option>
-                <option value="comm">Commercial</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="select-offence">Offence Type</label>
-              <select class="form-select" id="select-offence" aria-label="Select offence">
-                <option value="">— Select Offence —</option>
-                <option value="helmet">Riding without Helmet</option>
-                <option value="seatbelt">Not wearing Seat Belt</option>
-                <option value="speeding">Over Speeding</option>
-                <option value="drunk">Drunk Driving (DUI)</option>
-                <option value="mobile">Using Mobile while Driving</option>
-                <option value="license">Driving without Licence</option>
-              </select>
-            </div>
-
-            <div class="grid-2">
-              <div class="form-group">
-                <label class="form-label" for="select-repeat">History</label>
-                <select class="form-select" id="select-repeat">
-                  <option value="first">First Time</option>
-                  <option value="repeat">Repeat</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="check-juvenile">Juvenile?</label>
-                <div style="display:flex;align-items:center;height:42px;">
-                  <input type="checkbox" id="check-juvenile" style="width:20px;height:20px;accent-color:var(--primary);">
-                </div>
-              </div>
-            </div>
-
-            <button class="btn btn-primary" id="calc-btn" style="width:100%;justify-content:center;margin-top:8px;">
-              <i class="ph ph-calculator-fill"></i>
-              Calculate Fine
-            </button>
-          </div>
-
-          <!-- Result Card -->
-          <div class="card" id="result-card">
-            <p class="card-title">Fine Summary</p>
-
-            <div id="result-placeholder" style="text-align:center;padding:32px 0;">
-              <i class="ph ph-scales" style="font-size:3rem;color:var(--text-muted);display:block;margin-bottom:12px;"></i>
-              <p style="color:var(--text-muted);font-size:0.875rem;">Select an offence to see the fine</p>
-            </div>
-
-            <div id="result-content" style="display:none;">
-              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px;">
-                <span class="amount amount-lg" id="result-amount">₹0</span>
-                <span id="result-repeat-badge"></span>
-              </div>
-
-              <div class="divider"></div>
-
-              <table style="width:100%;font-size:0.82rem;">
-                <tbody>
-                  <tr>
-                    <td style="padding:8px 0;color:var(--text-muted);">Offence</td>
-                    <td style="padding:8px 0;text-align:right;color:var(--text-primary);font-weight:500;" id="result-offence-name">—</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;color:var(--text-muted);">Legal Section</td>
-                    <td style="padding:8px 0;text-align:right;" id="result-section">—</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;color:var(--text-muted);">Imprisonment</td>
-                    <td style="padding:8px 0;text-align:right;" id="result-jail">—</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;color:var(--text-muted);">Licence Action</td>
-                    <td style="padding:8px 0;text-align:right;" id="result-licence">—</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div class="divider"></div>
-
-              <button class="btn btn-secondary btn-sm" id="view-section-btn" style="width:100%;justify-content:center;">
-                <i class="ph ph-book-open-text"></i>
-                View Full Law Section
-              </button>
-            </div>
-          </div>
-
+        <div class="laws-toolbar">
+          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="law-search" placeholder="Search violation or section..."></div>
+          <div class="filter-wrap"><i class="fas fa-filter"></i><select id="law-category" class="filter-select"><option value="">All Categories</option></select></div>
         </div>
-
-      </section>
-
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: LAW BROWSER                 ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
-      <section class="view" id="view-laws" aria-labelledby="laws-heading">
-
-        <div class="page-header">
-          <h1 id="laws-heading">Law Browser</h1>
-          <p>Browse the Motor Vehicles Act, 1988 — amended up to 2023.</p>
-        </div>
-
-        <div class="card" style="margin-bottom: 16px;">
-          <div style="display:flex;gap:12px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:200px;">
-              <input class="form-input" type="search" id="law-search" placeholder="Search by section, keyword, or offence…" aria-label="Search laws">
-            </div>
-            <select class="form-select" id="law-category" style="max-width:200px;" aria-label="Filter by category">
-              <option value="">All Categories</option>
-              <option value="helmet">Helmets &amp; Safety</option>
-              <option value="speed">Speed Limits</option>
-              <option value="dui">Drunk Driving</option>
-              <option value="documents">Documents</option>
-              <option value="signals">Traffic Signals</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="table-wrapper">
-          <table id="laws-table" aria-label="Traffic laws table">
-            <thead>
-              <tr>
-                <th>Section</th>
-                <th>Offence</th>
-                <th>First Fine</th>
-                <th>Repeat Fine</th>
-                <th>Imprisonment</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="laws-tbody">
-              <!-- Content generated by JS -->
-            </tbody>
+        <div class="table-wrap">
+          <table class="laws-table">
+            <thead><tr><th>Section <i class="fas fa-sort"></i></th><th>Violation <i class="fas fa-sort"></i></th><th>First Offence Fine <i class="fas fa-sort"></i></th><th>Repeat Fine <i class="fas fa-sort"></i></th><th>Imprisonment <i class="fas fa-sort"></i></th><th>Status <i class="fas fa-sort"></i></th></tr></thead>
+            <tbody id="laws-tbody"></tbody>
           </table>
-
-          <div id="laws-empty-state" style="display:none; text-align:center; padding:64px 24px;">
-            <i class="ph ph-magnifying-glass" style="font-size:3rem; color:var(--text-muted); margin-bottom:16px;"></i>
-            <h3>No laws found</h3>
-            <p style="color:var(--text-secondary);">Try a different keyword or section number.</p>
-          </div>
+          <div id="laws-empty" class="empty-state" style="display:none;"><i class="fas fa-search"></i><p>No laws found matching your filters.</p></div>
         </div>
-
+        <div class="laws-footer">
+          <span class="page-info" id="page-info">Showing 1 to 10 of 50 laws</span>
+          <div class="page-btns" id="page-btns"></div>
+          <div class="page-size-wrap">Rows per page <select id="page-size" class="page-size-sel"><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></div>
+        </div>
       </section>
 
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: AI ASSISTANT                ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
-      <section class="view" id="view-ai" aria-labelledby="ai-heading">
-
-        <div class="page-header">
-          <h1 id="ai-heading">AI Legal Assistant</h1>
-          <p>Ask anything about Indian road traffic law in plain language.</p>
+      <!-- ═══ FINE CALCULATOR ═══ -->
+      <section class="view" id="view-calculator">
+        <div class="view-top">
+          <div class="vt-left"><div class="vt-icon green"><i class="fas fa-calculator"></i></div><div><h1>Fine Calculator</h1><p>Calculate traffic violation fines under Indian Motor Vehicles Act, 1988</p></div></div>
+          <div class="vt-right"><div class="info-pill success"><i class="fas fa-circle-check"></i> As per Motor Vehicles Act, 1988<br><small>Updated May 2024</small></div></div>
         </div>
+        <div class="calc-grid">
+          <div class="calc-form card">
+            <h2>Select Violation Details</h2>
+            <div class="form-group"><label>State / Union Territory</label><div class="sel-icon"><i class="fas fa-location-dot"></i><select id="calc-state" class="form-select"><option value="">— Select State —</option></select></div></div>
+            <div class="form-group"><label>Violation Type</label><div class="sel-icon"><i class="fas fa-file-lines"></i><select id="calc-violation" class="form-select"><option value="">— Select Violation —</option></select></div></div>
+            <div class="form-group"><label>Vehicle Type (Optional)</label><div class="sel-icon"><i class="fas fa-car"></i><select id="calc-vehicle" class="form-select"><option value="">— Any Vehicle —</option></select></div></div>
+            <button class="btn-calc" id="btn-calc"><i class="fas fa-calculator"></i> Calculate Fine</button>
+            <div class="calc-note"><i class="fas fa-info-circle"></i> Selected rules are applicable as per the state &amp; central government norms.</div>
+          </div>
+          <div class="calc-result card" id="calc-result" style="display:none;">
+            <div class="cr-top"><h2>Violation Fine Details</h2><span class="jur-badge" id="res-jur">● Applicable in Karnataka</span></div>
+            <div class="cr-amount-wrap"><div class="cr-label">Total Fine Amount</div><div class="cr-amount">₹<span id="res-amount">5,000</span></div><div class="cr-words" id="res-words">Rupees Five Thousand Only</div></div>
+            <div class="cr-details">
+              <div class="cr-row"><div class="cr-ico blue"><i class="fas fa-book"></i></div><div class="cr-info"><strong>Legal Provision</strong><span id="res-section">Section 129, MV Act, 1988</span></div><span class="cr-badge" id="res-sec-badge">Sec 129</span></div>
+              <div class="cr-row"><div class="cr-ico orange"><i class="fas fa-gavel"></i></div><div class="cr-info"><strong>Imprisonment</strong><span id="res-jail">Up to 3 months</span></div><span class="cr-badge warn" id="res-jail-badge">Up to 3 months</span></div>
+              <div class="cr-row"><div class="cr-ico red"><i class="fas fa-id-card"></i></div><div class="cr-info"><strong>License Action</strong><span id="res-license">License may be suspended</span></div><span class="cr-badge danger" id="res-lic-badge">Suspension Possible</span></div>
+            </div>
+            <div class="cr-tip" id="res-tip"><div class="cr-tip-icon"><i class="fas fa-circle-check"></i></div><div><strong class="text-primary">Good to know</strong><p id="res-notes">Wearing a helmet is mandatory for rider and pillion under Section 129.</p></div></div>
+          </div>
+        </div>
+        <div class="calc-footer">
+          <div class="calc-footer-note"><i class="fas fa-scale-balanced"></i><div><strong>Please Note</strong><p>Fines may vary based on amendments and state rules. This calculator is for informational purposes only.</p></div></div>
+          <button class="btn-outline">View MV Act, 1988 <i class="fas fa-up-right-from-square"></i></button>
+        </div>
+      </section>
 
-        <div class="card" style="max-width:720px;">
-          <div id="chat-messages" style="min-height:300px;max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:8px;" aria-live="polite" aria-label="Chat messages">
+      <!-- ═══ ANALYTICS ═══ -->
+      <section class="view" id="view-analytics">
+        <div class="view-top">
+          <div class="vt-left"><div class="vt-icon"><i class="fas fa-shield-halved"></i></div><div><h1>Road Safety Analytics</h1><p>Real-time traffic violation data and safety metrics</p></div></div>
+          <div class="vt-right"><div class="date-pill"><i class="fas fa-calendar"></i> May 19 – May 25, 2024</div><button class="btn-outline" id="btn-refresh-analytics"><i class="fas fa-rotate"></i> Refresh</button></div>
+        </div>
+        <div class="hud-grid">
+          <div class="hud-card"><div class="hud-body"><div class="hud-label">SAFETY INDEX <i class="fas fa-circle-info"></i></div><div class="hud-val text-primary" id="hud-safety">92%</div><div class="hud-sub text-primary">Excellent</div><div class="hud-trend"><i class="fas fa-arrow-trend-up"></i> 8% vs last week</div></div><div class="hud-ring green"><i class="fas fa-shield-halved"></i></div></div>
+          <div class="hud-card"><div class="hud-body"><div class="hud-label">RISK LEVEL <i class="fas fa-circle-info"></i></div><div class="hud-val" id="hud-risk">Low</div><div class="hud-sub">Keep it up! Road conditions are safe.</div><div class="hud-trend down"><i class="fas fa-arrow-trend-down"></i> 12% vs last week</div></div><div class="hud-ring amber"><i class="fas fa-shield-halved"></i></div></div>
+          <div class="hud-card"><div class="hud-body"><div class="hud-label">TRAFFIC DENSITY <i class="fas fa-circle-info"></i></div><div class="hud-val text-warning" id="hud-traffic">Moderate</div><div class="hud-sub">Some slowdowns in high traffic zones.</div><div class="hud-trend"><i class="fas fa-arrow-trend-up"></i> 5% vs last week</div></div><div class="hud-ring orange"><i class="fas fa-car-side"></i></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-bar"></i> Top 5 Traffic Violations</h3><a class="see-all">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="offenceChart"></canvas></div></div>
+          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3><a class="see-all">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="severityChart"></canvas></div></div>
+        </div>
+        <div class="insight-bar"><div class="insight-left"><i class="fas fa-chart-line"></i><span class="text-primary"><strong>Insight</strong></span><span>Over speeding and non-helmet violations contribute to 72% of total violations.</span><span class="sep">|</span><span>Focus on enforcement in high-risk zones.</span></div><button class="btn-outline"><i class="fas fa-download"></i> Download Report</button></div>
+      </section>
 
-            <!-- Welcome message -->
-            <div style="display:flex;gap:10px;align-items:flex-start;">
-              <div style="width:32px;height:32px;background:var(--primary-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="ph ph-robot" style="color:var(--primary);font-size:1rem;"></i>
-              </div>
-              <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;max-width:85%;">
-                <p style="font-size:0.875rem;line-height:1.6;color:var(--text-secondary);">
-                  Hello! I'm your DriveLegal AI assistant. Ask me about traffic fines, sections of the Motor Vehicles Act, your rights during a police check, or anything related to Indian road law.
-                </p>
-              </div>
+      <!-- ═══ AI ASSISTANT ═══ -->
+      <section class="view" id="view-ai">
+        <div class="ai-layout">
+          <div class="ai-sidebar" id="ai-sidebar">
+            <div class="ai-sb-brand"><div class="brand-icon"><i class="fas fa-shield-halved"></i></div><span>DriveLegal <span class="ai-tag">AI</span></span><p>Your AI Traffic Law Assistant</p></div>
+            <button class="btn-new-chat" id="btn-new-chat"><i class="fas fa-plus"></i> New Chat</button>
+            <div class="ai-sb-label">Recent Chats</div>
+            <div class="ai-chat-list" id="ai-chat-list">
+              <div class="ai-chat-item active"><i class="fas fa-message"></i><div><div>Fine for overspeeding</div><small>2 min ago</small></div></div>
+              <div class="ai-chat-item"><i class="fas fa-message"></i><div><div>Drunk driving penalties</div><small>1 hour ago</small></div></div>
+              <div class="ai-chat-item"><i class="fas fa-message"></i><div><div>Signal jumping fine</div><small>3 hours ago</small></div></div>
+              <div class="ai-chat-item"><i class="fas fa-message"></i><div><div>Without helmet fine</div><small>Yesterday</small></div></div>
             </div>
 
           </div>
-
-          <div class="divider"></div>
-
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="ai-suggestions">
-            <button class="btn btn-secondary btn-sm" style="border-radius:20px;">Helmet fine?</button>
-            <button class="btn btn-secondary btn-sm" style="border-radius:20px;">Drunk driving</button>
-            <button class="btn btn-secondary btn-sm" style="border-radius:20px;">Police rights</button>
-            <button class="btn btn-secondary btn-sm" style="border-radius:20px;">Vehicle seizure</button>
-          </div>
-
-          <div style="display:flex;gap:8px;">
-            <input class="form-input" type="text" id="ai-input" placeholder="e.g. What is the fine for drunk driving in Karnataka?" aria-label="Ask the AI assistant" style="flex:1;">
-            <button class="btn btn-primary" id="ai-send-btn" aria-label="Send message">
-              <i class="ph ph-paper-plane-tilt"></i>
-            </button>
-            <button class="btn btn-secondary" id="voice-btn" title="Voice Input">
-              <i class="ph ph-microphone"></i>
-            </button>
-          </div>
-
-          <p style="margin-top:10px;font-size:0.72rem;color:var(--text-muted);">
-            ⚠️ AI responses are for informational purposes only. Consult a qualified lawyer for legal advice.
-          </p>
-        </div>
-
-      </section>
-
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: MY VEHICLES (NEW)          ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
-      <section class="view" id="view-vehicles" aria-labelledby="vehicles-heading">
-        <div class="page-header">
-          <h1 id="vehicles-heading">My Vehicles</h1>
-          <p>Manage your saved vehicles for quick document checks and jurisdiction matching.</p>
-        </div>
-
-        <div class="grid-2">
-          <div class="card" style="position:relative;border-color:var(--primary);">
-            <div class="badge badge-green" style="position:absolute;top:16px;right:16px;">Active</div>
-            <i class="ph ph-car" style="font-size:2rem;color:var(--primary);margin-bottom:12px;"></i>
-            <h3 style="margin-bottom:4px;">Honda City (DL 1C AB 1234)</h3>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:16px;">White · Petrol · LMV</p>
-            <div class="divider" style="margin:12px 0;"></div>
-            <div style="font-size:0.75rem;display:flex;flex-direction:column;gap:8px;">
-              <div style="display:flex;justify-content:space-between;">
-                <span style="color:var(--text-muted);">Insurance</span>
-                <span style="color:var(--success);">Valid till 2027</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;">
-                <span style="color:var(--text-muted);">PUC Check</span>
-                <span style="color:var(--warning);">Expires in 12 days</span>
-              </div>
+          <div class="ai-main">
+            <div class="ai-top-bar"><div class="ai-bot-info"><div class="ai-bot-avatar"><i class="fas fa-robot"></i></div><div><strong>DriveLegal AI</strong> <span class="online-dot">●</span><br><small>Always here to help you drive safe and legal.</small></div></div><div class="ai-top-actions"><button class="icon-btn"><i class="fas fa-wand-magic-sparkles"></i></button><span class="online-badge"><span class="online-dot">●</span> Online</span></div></div>
+            <div class="chat-messages" id="chat-messages">
+              <div class="msg bot-msg"><div class="msg-avatar"><i class="fas fa-robot"></i></div><div class="msg-bubble"><p>Hello! I'm your DriveLegal AI Copilot. Ask me anything about Indian traffic laws, fines, and your rights on the road.</p><div class="msg-time">Now</div></div></div>
             </div>
-          </div>
-
-          <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;border-width:2px;cursor:pointer;opacity:0.6;">
-            <i class="ph ph-plus-circle" style="font-size:2rem;margin-bottom:8px;"></i>
-            <span>Add New Vehicle</span>
+            <div class="chat-input-bar">
+              <div class="chat-input-wrap"><textarea id="ai-input" placeholder="Ask anything about traffic laws, fines, and your rights..." rows="1"></textarea><button class="icon-btn attach-btn"><i class="fas fa-paperclip"></i></button><button class="send-btn" id="ai-send"><i class="fas fa-paper-plane"></i></button></div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- ╔══════════════════════════════════════╗ -->
-      <!-- ║     VIEW: SETTINGS                    ║ -->
-      <!-- ╚══════════════════════════════════════╝ -->
-      <section class="view" id="view-settings" aria-labelledby="settings-heading">
+    </div><!-- content-area -->
+  </div><!-- main-wrapper -->
+</div><!-- app-container -->
 
-        <div class="page-header">
-          <h1 id="settings-heading">Settings</h1>
-          <p>Configure DriveLegal for your jurisdiction and preferences.</p>
-        </div>
-
-        <div class="card" style="max-width:540px;">
-          <p class="card-title">Default Jurisdiction</p>
-
-          <div class="form-group">
-            <label class="form-label" for="default-state">Home State</label>
-            <select class="form-select" id="default-state">
-              <option value="">— Select —</option>
-              <option value="KA">Karnataka</option>
-              <option value="MH">Maharashtra</option>
-              <option value="DL">Delhi</option>
-              <option value="TN">Tamil Nadu</option>
-              <option value="UP">Uttar Pradesh</option>
-            </select>
-          </div>
-
-          <div class="divider"></div>
-          <p class="card-title">Offline Data</p>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <div>
-              <p style="font-size:0.875rem;font-weight:500;">Law Database</p>
-              <p style="font-size:0.78rem;color:var(--text-muted);">Last synced: Never</p>
-            </div>
-            <button class="btn btn-secondary btn-sm" id="sync-btn">
-              <i class="ph ph-arrows-clockwise"></i>
-              Sync Now
-            </button>
-          </div>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <p style="font-size:0.875rem;font-weight:500;">Storage Used</p>
-              <p style="font-size:0.78rem;color:var(--text-muted);" id="storage-used">Calculating…</p>
-            </div>
-            <button class="btn btn-danger btn-sm" id="clear-cache-btn">
-              <i class="ph ph-trash"></i>
-              Clear
-            </button>
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-  <!-- Driver HUD -->
-  <div class="driver-hud" id="driver-hud">
-    <div class="hud-item">
-      <span class="hud-label">Current Speed</span>
-      <span class="hud-value hud-speed"><span id="hud-current-speed">48</span> <small style="font-size:0.6rem;">km/h</small></span>
-    </div>
-    <div class="divider" style="margin:4px 0;"></div>
-    <div class="hud-item">
-      <span class="hud-label">Road Limit</span>
-      <span class="hud-value" id="hud-speed-limit">50</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Zone</span>
-      <span class="hud-value" id="hud-zone">Urban</span>
-    </div>
-  </div>
-
-</div>
-
-<!-- Law Details Modal/Drawer -->
-<div class="sidebar-overlay" id="modal-overlay" style="z-index:250;"></div>
-<div id="law-modal" style="position:fixed;right:-100%;top:0;bottom:0;width:min(500px, 100%);background:var(--bg-surface);border-left:1px solid var(--border-bright);z-index:300;transition:right 0.3s var(--ease);display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.4);">
-  <div class="noti-header" style="padding:var(--space-lg);">
-    <span style="font-weight:800;font-size:1.1rem;" id="modal-title">Law Details</span>
-    <button class="btn btn-ghost" id="close-modal"><i class="ph ph-x" style="font-size:1.5rem;"></i></button>
-  </div>
-  <div style="padding:var(--space-lg);overflow-y:auto;flex:1;" id="modal-body">
-    <div class="skeleton-title skeleton"></div>
-    <div class="skeleton-text skeleton"></div>
-    <div class="skeleton-text skeleton"></div>
-    <div class="skeleton-text skeleton" style="width:80%;"></div>
-    <div class="divider"></div>
-    <div class="skeleton-rect skeleton" style="height:150px;"></div>
-  </div>
-  <div style="padding:var(--space-lg);border-top:1px solid var(--border);display:flex;gap:12px;">
-    <button class="btn btn-primary" style="flex:1;">Ask AI about this</button>
-    <button class="btn btn-secondary"><i class="ph ph-copy"></i></button>
-  </div>
-</div>
-
-<!-- Searchable Location Modal -->
-<div class="sidebar-overlay" id="location-overlay" style="z-index:450;"></div>
-<div id="location-modal" style="position:fixed;left:50%;top:50%;transform:translate(-50%, -50%) scale(0.9);width:min(400px, 90%);background:var(--bg-surface);border:1px solid var(--border-bright);border-radius:var(--radius-xl);z-index:500;padding:var(--space-lg);display:none;opacity:0;transition:all 0.3s var(--ease);box-shadow:0 32px 64px rgba(0,0,0,0.6);">
-  <h3 style="margin-bottom:16px;">Select State / UT</h3>
-  <input class="form-input" type="search" placeholder="Search state..." style="margin-bottom:16px;" id="state-search">
-  <div style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;" id="state-list">
-    <button class="nav-item">Karnataka</button>
-    <button class="nav-item">Maharashtra</button>
-    <button class="nav-item">Delhi</button>
-    <button class="nav-item">Tamil Nadu</button>
-    <button class="nav-item">Kerala</button>
-    <button class="nav-item">Gujarat</button>
-  </div>
-</div>
-<nav class="bottom-nav">
-  <button class="bottom-nav-item active" data-view="view-home">
-    <i class="ph ph-house"></i>
-    <span>Home</span>
-  </button>
-  <button class="bottom-nav-item" data-view="view-calculator">
-    <i class="ph ph-calculator"></i>
-    <span>Calc</span>
-  </button>
-  <button class="bottom-nav-item" data-view="view-ai">
-    <i class="ph ph-robot"></i>
-    <span>AI</span>
-  </button>
-  <button class="bottom-nav-item" data-view="view-laws">
-    <i class="ph ph-book-open"></i>
-    <span>Laws</span>
-  </button>
+<!-- Bottom Nav (Mobile) -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-item active" data-view="view-home"><i class="fas fa-house"></i><span>Home</span></button>
+  <button class="bn-item" data-view="view-laws"><i class="fas fa-book-open"></i><span>Laws</span></button>
+  <button class="bn-item" data-view="view-calculator"><i class="fas fa-calculator"></i><span>Calculator</span></button>
+  <button class="bn-item" data-view="view-analytics"><i class="fas fa-chart-simple"></i><span>Analytics</span></button>
+  <button class="bn-item" data-view="view-ai"><i class="fas fa-robot"></i><span>AI Assistant</span></button>
 </nav>
 
-<script src="app.js"></script>
-<script type="module" src="/js/offline.js"></script>
+<!-- Law Detail Modal -->
+<div class="modal-overlay" id="modal-overlay"></div>
+<div class="detail-modal" id="law-modal">
+  <div class="modal-head"><h2 id="modal-title">Law Detail</h2><button id="close-modal"><i class="fas fa-xmark"></i></button></div>
+  <div class="modal-body" id="modal-content"></div>
+</div>
 
+<script src="app.js?v=8"></script>
 </body>
 </html>

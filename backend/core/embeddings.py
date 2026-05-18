@@ -1,37 +1,66 @@
 import os
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from typing import Optional
 
-# 1. Dynamically calculate directories relative to this file
+import chromadb
+from chromadb.utils import embedding_functions
+
+# Dynamically calculate directories relative to this file
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 DB_DIR = os.path.join(BASE_DIR, "data", "chroma_db")
 COLLECTION_NAME = "traffic_laws"
 
-print("⏳ Loading local embedding model (all-MiniLM-L6-v2)...")
-# Initialize the model specified in requirements
-embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-print("✅ Local embedding model loaded successfully.")
+# Lazy-loaded singletons (avoid loading model on every API startup)
+_chroma_client: Optional[chromadb.PersistentClient] = None
+_collection = None
 
-# 2. Initialize persistent ChromaDB Client
-vector_store = Chroma(
-    persist_directory=DB_DIR,
-    embedding_function=embedding_model,
-    collection_name=COLLECTION_NAME
-)
 
-def similarity_search(query: str, top_k: int = 5):
-    """
-    Helper function for Adithya to call inside the /api/chat endpoint.
-    Returns a list of matching context documents.
+def get_vector_store():
+    """Lazy-load persistent Chroma collection using the default embedding function."""
+    global _chroma_client, _collection
+
+    if _collection is None:
+        os.makedirs(DB_DIR, exist_ok=True)
+        print("Loading ChromaDB with default embedding model...")
+        _chroma_client = chromadb.PersistentClient(path=DB_DIR)
+        _ef = embedding_functions.DefaultEmbeddingFunction()
+        _collection = _chroma_client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=_ef,
+        )
+        print(f"ChromaDB collection '{COLLECTION_NAME}' ready ({_collection.count()} docs).")
+    return _collection
+
+
+def similarity_search(
+    query: str,
+    top_k: int = 5,
+    jurisdiction: Optional[str] = None,
+) -> list[str]:
+    """Return raw document strings for best-matching chunks.
+    
+    If jurisdiction is provided, filters by metadata['jurisdiction'].
     """
     try:
-        results = vector_store.similarity_search(query, k=top_k)
-        # Returns raw text string snippets from the best matching chunks
-        return [doc.page_content for doc in results]
+        collection = get_vector_store()
+        if collection.count() == 0:
+            return []
+            
+        where_filter = {"jurisdiction": jurisdiction} if jurisdiction else None
+        
+        results = collection.query(
+            query_texts=[query], 
+            n_results=min(top_k, collection.count()),
+            where=where_filter
+        )
+        return results["documents"][0] if results["documents"] else []
+        
     except Exception as e:
-        print(f"❌ Error during similarity search: {e}")
+        print(f"Error during similarity search: {e}")
         return []
+
 
 if __name__ == "__main__":
     # Sanity check test
     print(f"ChromaDB persistent storage located at: {DB_DIR}")
+    get_vector_store()
+    print("Vector store ready.")

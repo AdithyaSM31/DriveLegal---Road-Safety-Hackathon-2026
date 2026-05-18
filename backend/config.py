@@ -7,9 +7,16 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env from backend directory
+# Load .env from backend directory or root
 _backend_dir = Path(__file__).resolve().parent
-load_dotenv(_backend_dir / ".env")
+_root_dir = _backend_dir.parent
+
+if (_backend_dir / ".env").exists():
+    load_dotenv(_backend_dir / ".env")
+elif (_root_dir / ".env").exists():
+    load_dotenv(_root_dir / ".env")
+else:
+    load_dotenv() # Fallback to default
 
 # --- Paths ---
 BASE_DIR = _backend_dir.parent  # DriveLegal/

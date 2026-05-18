@@ -27,6 +27,14 @@ from backend.core.database import (
 router = APIRouter(prefix="/api/locations", tags=["Locations"])
 
 
+@router.get("", response_model=list[JurisdictionOut])
+async def list_jurisdictions_root(
+    country_id: Optional[int] = Query(None, description="Filter by country ID"),
+):
+    """Alias for /jurisdictions to support frontend shorthand."""
+    return await get_jurisdictions(country_id)
+
+
 @router.get("/countries", response_model=list[CountryOut])
 async def list_countries():
     """Get all supported countries."""

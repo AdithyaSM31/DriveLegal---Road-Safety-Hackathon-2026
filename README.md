@@ -95,9 +95,13 @@ If you prefer to run it natively:
    export GROQ_API_KEY=gsk_your_api_key_here
    ```
 
-3. **Seed the Database:**
+3. **Seed & Build Databases:**
    ```bash
+   # Seed the relational database (Violations, Fines, Locations)
    python scripts/seed_database.py
+
+   # Build the AI knowledge base (Vector Embeddings)
+   python scripts/build_embeddings.py
    ```
 
 4. **Start the Server:**
@@ -108,22 +112,17 @@ If you prefer to run it natively:
 
 ---
 
-## 📸 Screenshots
+## 👨‍💻 The Team
 
-* **Dashboard & Driver HUD:** Real-time context and quick actions.
-* **Challan Calculator:** Precise state-by-state fine calculation.
-* **AI Assistant:** Context-aware legal chat with RAG.
-* **Law Browser:** Lightning-fast offline law searching.
-
-*(Note to Judges: Please refer to the Pitch Video included in our submission for a full walkthrough of the UI).*
+* **Adithya** — Project Lead & Backend Architect
+* **Vaishnav** — Frontend Engineering & UI/UX Design
+* **Rishi** — PWA Optimization & Offline Logic
+* **Marion** — Database Engineering & Seeding
+* **Nitin** — AI Engineering & RAG Pipeline
+* **Aysha** — Data Analytics & Backend Statistics
 
 ---
 
-## 👨‍💻 The Team
+## 📜 License
 
-* **Adithya** — Lead & Backend Architect
-* **Vaishnav** — Frontend & UI/UX Design
-* **Rishi** — PWA & Offline Sync
-* **Marion** — Database Engineering
-* **Nitin** — AI & RAG Pipeline
-* **Aysha** — Backend Analytics
+This project is submitted for the **Road Safety Hackathon 2026**. All rights reserved by the respective team members.
