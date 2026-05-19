@@ -120,16 +120,29 @@ async function loadLaws() {
     updatePageInfo();
     renderPageBtns();
   } catch (e) {
-    console.warn("[DriveLegal] API unavailable, using local fallback data.");
-    const search = document.getElementById("law-search")?.value.toLowerCase() || "";
+    console.warn("[DriveLegal] API unavailable, attempting local database lookup...");
+    const search = document.getElementById("law-search")?.value || "";
     const category = document.getElementById("law-category")?.value || "";
-    allLaws = MV_ACT_LAWS.filter(law => {
-      const matchesSearch = !search ||
-        law.violation_name.toLowerCase().includes(search) ||
-        law.section_reference.toLowerCase().includes(search);
-      const matchesCategory = !category || law.category_name === category;
-      return matchesSearch && matchesCategory;
-    });
+
+    try {
+      if (typeof window.queryOffline === "function") {
+        allLaws = await window.queryOffline({ search, category });
+        console.log("[DriveLegal] Offline IndexedDB query returned", allLaws.length, "laws.");
+      } else {
+        throw new Error("window.queryOffline is not a function");
+      }
+    } catch (offlineErr) {
+      console.warn("[DriveLegal] Local IndexedDB query failed, using hardcoded MV_ACT_LAWS fallback:", offlineErr);
+      const searchLower = search.toLowerCase();
+      allLaws = MV_ACT_LAWS.filter(law => {
+        const matchesSearch = !searchLower ||
+          law.violation_name.toLowerCase().includes(searchLower) ||
+          law.section_reference.toLowerCase().includes(searchLower);
+        const matchesCategory = !category || law.category_name === category;
+        return matchesSearch && matchesCategory;
+      });
+    }
+
     lawsTotal = allLaws.length;
     if (!allLaws.length) {
       tbody.innerHTML = "";
