@@ -1000,3 +1000,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 100);
 });
+
+// ── WEATHER API ────────────────────────────────────────────
+window.onLocationFound = function(lat, lon) {
+  fetchWeatherData(lat, lon);
+};
+
+async function fetchWeatherData(lat, lon) {
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+    const data = await res.json();
+    
+    const temp = Math.round(data.current_weather.temperature);
+    const code = data.current_weather.weathercode;
+    
+    // Save to localStorage for offline cache
+    localStorage.setItem("drivelegal_last_weather", JSON.stringify({ temp, code, timestamp: Date.now() }));
+    
+    updateWeatherUI(temp, code);
+  } catch (err) {
+    console.error("Open-Meteo API failed:", err);
+    // Load offline cache
+    const cached = localStorage.getItem("drivelegal_last_weather");
+    if (cached) {
+      console.log("[DriveLegal] Using cached offline weather data...");
+      try {
+        const { temp, code } = JSON.parse(cached);
+        updateWeatherUI(temp, code);
+      } catch (e) {}
+    }
+  }
+}
+
+function updateWeatherUI(temp, code) {
+  let statusText = "Clear";
+  let iconClass = "fa-sun";
+  
+  if (code > 50) {
+    statusText = "Rainy (Drive Slow)";
+    iconClass = "fa-cloud-showers-heavy";
+  } else if (code > 0) {
+    statusText = "Cloudy";
+    iconClass = "fa-cloud";
+  }
+  
+  const weatherWrap = document.querySelector(".weather-row");
+  if (weatherWrap) {
+    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}°C • ${statusText}`;
+  }
+  
+  const statVal = document.querySelector(".weather-row")?.previousElementSibling;
+  if (statVal && statVal.classList.contains("stat-val")) {
+    statVal.textContent = statusText;
+    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}°C`;
+  }
+}
