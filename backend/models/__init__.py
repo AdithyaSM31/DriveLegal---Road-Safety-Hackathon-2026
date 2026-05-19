@@ -1,1 +1,2 @@
-# DriveLegal Models
+"""DriveLegal models package."""
+

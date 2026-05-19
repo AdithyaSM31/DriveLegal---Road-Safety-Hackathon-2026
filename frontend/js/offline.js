@@ -185,3 +185,7 @@ window.addEventListener("load", async () => {
     await syncOfflineData();
   }
 });
+
+// Expose to window scope for non-module script access
+window.queryOffline = queryOffline;
+window.syncOfflineData = syncOfflineData;

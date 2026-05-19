@@ -20,27 +20,42 @@ def get_vector_store():
 
     if _collection is None:
         os.makedirs(DB_DIR, exist_ok=True)
-        print("🔄 Loading ChromaDB with default embedding model...")
+        print("Loading ChromaDB with default embedding model...")
         _chroma_client = chromadb.PersistentClient(path=DB_DIR)
         _ef = embedding_functions.DefaultEmbeddingFunction()
         _collection = _chroma_client.get_or_create_collection(
             name=COLLECTION_NAME,
             embedding_function=_ef,
         )
-        print(f"✅ ChromaDB collection '{COLLECTION_NAME}' ready ({_collection.count()} docs).")
+        print(f"ChromaDB collection '{COLLECTION_NAME}' ready ({_collection.count()} docs).")
     return _collection
 
 
-def similarity_search(query: str, top_k: int = 5) -> list[str]:
-    """Return raw document strings for best-matching chunks."""
+def similarity_search(
+    query: str,
+    top_k: int = 5,
+    jurisdiction: Optional[str] = None,
+) -> list[str]:
+    """Return raw document strings for best-matching chunks.
+    
+    If jurisdiction is provided, filters by metadata['jurisdiction'].
+    """
     try:
         collection = get_vector_store()
         if collection.count() == 0:
             return []
-        results = collection.query(query_texts=[query], n_results=min(top_k, collection.count()))
+            
+        where_filter = {"jurisdiction": jurisdiction} if jurisdiction else None
+        
+        results = collection.query(
+            query_texts=[query], 
+            n_results=min(top_k, collection.count()),
+            where=where_filter
+        )
         return results["documents"][0] if results["documents"] else []
+        
     except Exception as e:
-        print(f"❌ Error during similarity search: {e}")
+        print(f"Error during similarity search: {e}")
         return []
 
 

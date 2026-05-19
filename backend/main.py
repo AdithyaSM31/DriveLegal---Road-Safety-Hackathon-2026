@@ -30,6 +30,7 @@ from backend.api.locations import router as locations_router
 from backend.api.challan import router as challan_router
 from backend.api.laws import router as laws_router
 from backend.api.chat import router as chat_router
+from backend.api.analytics import router as analytics_router
 
 
 # ────────────────────────── Lifespan ────────────────────────────────────────
@@ -73,6 +74,7 @@ app.include_router(locations_router)
 app.include_router(challan_router)
 app.include_router(laws_router)
 app.include_router(chat_router)
+app.include_router(analytics_router)
 
 
 # ────────────────────────── Health Check ────────────────────────────────────
