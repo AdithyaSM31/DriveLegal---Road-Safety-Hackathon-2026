@@ -1004,7 +1004,59 @@ document.addEventListener("DOMContentLoaded", () => {
 // ── WEATHER API ────────────────────────────────────────────
 window.onLocationFound = function(lat, lon) {
   fetchWeatherData(lat, lon);
+  fetchSpeedLimit(lat, lon);
 };
+
+// ── OVERPASS SPEED LIMIT (OpenStreetMap) ─────────────────
+async function fetchSpeedLimit(lat, lon) {
+  // Update UI immediately with a safe fallback.
+  let speedLimit = 50;
+
+  try {
+    const query = `[out:json];way(around:80, ${lat}, ${lon})[maxspeed];out tags;`;
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Overpass HTTP ${res.status}`);
+
+    const data = await res.json();
+
+    if (data?.elements?.length > 0) {
+      const speedTag = data.elements[0]?.tags?.maxspeed;
+      if (speedTag) {
+        // maxspeed might be like "50", "50 mph", etc.
+        const n = parseInt(String(speedTag).replace(/[^0-9]/g, ""), 10);
+        if (!Number.isNaN(n)) speedLimit = n;
+      }
+    }
+    
+    // Save to localStorage for offline cache
+    localStorage.setItem("drivelegal_last_speed_limit", speedLimit);
+  } catch (err) {
+    console.error("Overpass API speed limit retrieval failed:", err);
+    // Load from cache if offline
+    const cached = localStorage.getItem("drivelegal_last_speed_limit");
+    if (cached) {
+      const n = parseInt(cached, 10);
+      if (!Number.isNaN(n)) {
+        speedLimit = n;
+        console.log("[DriveLegal] Loaded offline cached speed limit:", speedLimit);
+      }
+    }
+  }
+
+  // Update dashboard Speed Circular Sign and Gauge
+  const circle = document.querySelector(".limit-circle span");
+  if (circle) circle.textContent = String(speedLimit);
+
+  // Update live warning thresholds based on custom gauges
+  window.currentSpeedLimit = speedLimit;
+
+  // Also update label text if it exists.
+  const limitVal = document.querySelector(".limit-val");
+  if (limitVal) limitVal.textContent = `${speedLimit} km/h`;
+}
+
 
 async function fetchWeatherData(lat, lon) {
   try {
