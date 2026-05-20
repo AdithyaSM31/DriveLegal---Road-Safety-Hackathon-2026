@@ -75,9 +75,36 @@
         </div>
 
         <div class="speed-card">
+          <!-- GPS Tracker Info & Simulation Toggle -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-sec);font-weight:600;">
+              <i class="fas fa-satellite-dish" style="color:var(--primary);animation:pulse 2s infinite;"></i> GPS ACTIVE
+            </div>
+            <label class="sim-switch" style="display:inline-flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--text-sec);cursor:pointer;font-weight:600;user-select:none;">
+              Simulate Drive
+              <input type="checkbox" id="sim-toggle" style="display:none;">
+              <span class="sim-slider" style="position:relative;display:inline-block;width:34px;height:18px;background:var(--bg-elevated);border-radius:20px;border:1px solid var(--border-bright);transition:0.3s;">
+                <span class="sim-knob" style="position:absolute;content:'';height:12px;width:12px;left:2px;bottom:2px;background:var(--text-sec);border-radius:50%;transition:0.3s;"></span>
+              </span>
+            </label>
+          </div>
+
           <div class="speed-row">
             <div class="gauge-wrap">
-              <svg class="gauge-svg" viewBox="0 0 160 160"><circle cx="80" cy="80" r="68" fill="none" stroke="#1a2332" stroke-width="10"/><circle class="gauge-arc" cx="80" cy="80" r="68" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-dasharray="320 108" stroke-dashoffset="108" stroke-linecap="round" transform="rotate(-126 80 80)"/><defs><linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#34d399"/></linearGradient></defs></svg>
+              <svg class="gauge-svg" viewBox="0 0 160 160">
+                <circle cx="80" cy="80" r="68" fill="none" stroke="#1a2332" stroke-width="10"/>
+                <circle class="gauge-arc" cx="80" cy="80" r="68" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-dasharray="320 108" stroke-dashoffset="108" stroke-linecap="round" transform="rotate(-126 80 80)"/>
+                <defs>
+                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#10b981"/>
+                    <stop offset="100%" stop-color="#34d399"/>
+                  </linearGradient>
+                  <linearGradient id="gaugeGradDanger" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#ef4444"/>
+                    <stop offset="100%" stop-color="#f97316"/>
+                  </linearGradient>
+                </defs>
+              </svg>
               <div class="gauge-text"><small>Your Speed</small><div class="gauge-num">48</div><div class="gauge-unit">km/h</div></div>
             </div>
             <div class="limit-sign"><div class="limit-circle"><span>50</span></div><div class="limit-label">Speed Limit</div><div class="limit-val">50 km/h</div></div>

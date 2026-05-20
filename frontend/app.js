@@ -953,6 +953,10 @@ function initBeams() {
 }
 
 // â”€â”€ GEOLOCATION & REVERSE GEOCODING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+let geoWatchId = null;
+window.isSimulatingSpeed = false;
+window.currentSpeedLimit = 50;
+
 function getLiveLocation() {
   const addrEl = document.querySelector(".ctx-addr");
   if (!addrEl) return;
@@ -965,12 +969,23 @@ function getLiveLocation() {
   addrEl.innerHTML =
     '<i class="fas fa-spinner spin"></i> Retrieving location...';
 
-  navigator.geolocation.getCurrentPosition(
+  // Use watchPosition for real-time tracking
+  geoWatchId = navigator.geolocation.watchPosition(
     async (position) => {
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude, speed } = position.coords;
 
       window.currentLat = latitude;
       window.currentLon = longitude;
+
+      // Update real vehicle speed if simulator is disabled
+      if (!window.isSimulatingSpeed) {
+        if (speed !== null && speed !== undefined && speed >= 0) {
+          const speedKmh = Math.round(speed * 3.6);
+          updateVehicleSpeedUI(speedKmh);
+        } else {
+          updateVehicleSpeedUI(0);
+        }
+      }
 
       try {
         const res = await fetch(
@@ -996,7 +1011,6 @@ function getLiveLocation() {
           addrStr = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
 
         addrEl.textContent = addrStr;
-        showToast("Location updated successfully!", "info");
 
         if (typeof window.onLocationFound === "function") {
           window.onLocationFound(latitude, longitude);
@@ -1012,8 +1026,83 @@ function getLiveLocation() {
         "MG Road, Bangalore, Karnataka (Location Access Denied)";
       showToast("Could not retrieve live GPS coordinates.", "warn");
     },
-    { enableHighAccuracy: true, timeout: 10000 },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
   );
+}
+
+// ── SPEEDOMETER HUD ENGINE & SIMULATION ─────────────────────
+let simInterval = null;
+let simSpeed = 35;
+let simDirection = 1; // 1 = accelerating, -1 = decelerating
+
+function updateVehicleSpeedUI(speed) {
+  // Update numerical speed
+  const speedNumEl = document.querySelector(".gauge-num");
+  if (speedNumEl) speedNumEl.textContent = String(speed);
+
+  // Update SVG Gauge Dashoffset
+  // The gauge-arc has stroke-dasharray="320 108"
+  // dashoffset ranges from 320 (0 km/h) to 0 (120 km/h+)
+  const maxSpeed = 120;
+  const pct = Math.min(speed / maxSpeed, 1);
+  const dashoffset = 320 - Math.round(pct * 320);
+  
+  const arc = document.querySelector(".gauge-arc");
+  if (arc) {
+    arc.style.strokeDashoffset = dashoffset;
+    // Set warning red color if speeding
+    if (speed > window.currentSpeedLimit) {
+      arc.setAttribute("stroke", "url(#gaugeGradDanger)");
+    } else {
+      arc.setAttribute("stroke", "url(#gaugeGrad)");
+    }
+  }
+
+  // Update Alert/Safety HUD Status Bar
+  const speedStatus = document.querySelector(".speed-status");
+  if (speedStatus) {
+    if (speed > window.currentSpeedLimit) {
+      speedStatus.className = "speed-status danger";
+      speedStatus.innerHTML = `<i class="fas fa-triangle-exclamation"></i> Speeding detected! Sec 183 fine: ₹1,000`;
+      
+      // Gentle device vibration alert for drivers (if supported on mobile)
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    } else {
+      speedStatus.className = "speed-status safe";
+      speedStatus.innerHTML = `<i class="fas fa-circle-check"></i> You're within the speed limit`;
+    }
+  }
+}
+
+function startSpeedSimulation() {
+  if (simInterval) clearInterval(simInterval);
+  showToast("Driving simulation started!", "info");
+  
+  simInterval = setInterval(() => {
+    // Smoothly fluctuate speed between 32 and 68 km/h
+    if (simSpeed >= 68) {
+      simDirection = -1;
+    } else if (simSpeed <= 32) {
+      simDirection = 1;
+    }
+    
+    // Add random fluctuations for a realistic feel
+    const change = (Math.random() * 3 + 1) * simDirection;
+    simSpeed = Math.round(Math.max(0, simSpeed + change));
+    
+    updateVehicleSpeedUI(simSpeed);
+  }, 1000);
+}
+
+function stopSpeedSimulation() {
+  if (simInterval) {
+    clearInterval(simInterval);
+    simInterval = null;
+  }
+  showToast("Driving simulation stopped.", "info");
+  updateVehicleSpeedUI(0);
 }
 
 // â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1021,6 +1110,19 @@ document.addEventListener("DOMContentLoaded", () => {
   loadLocations();
   getLiveLocation();
   initBeams();
+
+  // Setup simulation toggle controls
+  const simToggle = document.getElementById("sim-toggle");
+  if (simToggle) {
+    simToggle.addEventListener("change", (e) => {
+      window.isSimulatingSpeed = e.target.checked;
+      if (window.isSimulatingSpeed) {
+        startSpeedSimulation();
+      } else {
+        stopSpeedSimulation();
+      }
+    });
+  }
 
   const waitChart = setInterval(() => {
     if (typeof Chart !== "undefined") {
