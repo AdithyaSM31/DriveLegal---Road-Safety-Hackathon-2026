@@ -59,12 +59,28 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS — allow all origins during development
+# CORS — allowlist Vercel frontend + local dev origins
+# Update VERCEL_URL once your Vercel deployment is live
+ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    # Add your Vercel URL here after deployment, e.g.:
+    # "https://drivelegal.vercel.app",
+    # "https://drivelegal-git-main-youruser.vercel.app",
+]
+
+import os
+# In production, also allow origins from CORS_ORIGINS environment variable
+extra_origins = os.environ.get("CORS_ORIGINS", "")
+if extra_origins:
+    ALLOWED_ORIGINS += [o.strip() for o in extra_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

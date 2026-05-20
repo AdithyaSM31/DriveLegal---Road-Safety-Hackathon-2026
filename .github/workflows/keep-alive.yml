@@ -1,0 +1,28 @@
+name: 🔁 Keep Render Backend Alive
+
+on:
+  schedule:
+    # Every 10 minutes, 24/7
+    - cron: '*/10 * * * *'
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  keep-alive-ping:
+    name: Ping DriveLegal Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: 🏓 Ping /api/health
+        run: |
+          echo "Pinging DriveLegal backend at $(date)..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            https://drivelegal.onrender.com/api/health)
+
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Backend is alive — HTTP $STATUS"
+          else
+            echo "⚠️  Backend returned HTTP $STATUS (may be waking up)"
+          fi
