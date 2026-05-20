@@ -9,6 +9,11 @@ if PROJECT_ROOT not in sys.path:
 
 from backend.core.embeddings import get_vector_store
 
+# Avoid long-running telemetry noise / crashes from some Chroma builds
+os.environ.setdefault("CHROMA_TELEMETRY", "FALSE")
+
+
+
 # Use the standardized data directory
 DOCS_DIR = os.path.join(PROJECT_ROOT, "data", "documents")
 CHUNK_SIZE = 500
@@ -42,11 +47,12 @@ def build_vector_database():
         if filename.endswith(".txt"):
             file_path = os.path.join(DOCS_DIR, filename)
             
-            # Check for PDF header even if named .txt
+            # Robustly load text from .txt files.
+            # If the content is actually a PDF (common in this repo), skip it for now.
             with open(file_path, "rb") as f:
                 head = f.read(8)
                 if head.startswith(b"%PDF"):
-                    print(f"⚠️ Skipping '{filename}' (PDF content detected). Use a text extractor first.")
+                    print(f"⚠️ Skipping '{filename}' (PDF content detected / stored as .txt).")
                     continue
                 f.seek(0)
                 raw_bytes = f.read()
@@ -54,7 +60,14 @@ def build_vector_database():
             try:
                 raw_text = raw_bytes.decode("utf-8")
             except UnicodeDecodeError:
+                # Best-effort decode without crashing the build
                 raw_text = raw_bytes.decode("utf-8", errors="ignore")
+
+            # Skip near-empty decodes
+            if not raw_text or len(raw_text.strip()) < 50:
+                print(f"⚠️ Skipping '{filename}' (decoded content too small/empty).")
+                continue
+
 
             source_tag = filename.replace(".txt", "").upper()
             

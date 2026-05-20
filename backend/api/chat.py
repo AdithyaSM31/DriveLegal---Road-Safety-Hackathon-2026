@@ -40,13 +40,32 @@ async def chat(req: ChatRequest):
         # jurisdiction_id (numeric), but Chroma metadata stores jurisdiction name.
         # We still allow passing jurisdiction_id as a string to match if your metadata
         # uses numeric strings.
-        jurisdiction_filter = str(req.jurisdiction_id) if req.jurisdiction_id is not None else None
+        # Chroma metadata stores jurisdiction as a human-readable name (e.g., "Maharashtra").
+        # The API request provides jurisdiction_id (numeric). Map id -> jurisdiction name.
+        jurisdiction_filter = None
+        if req.jurisdiction_id is not None:
+            try:
+                # Local import to avoid circular dependencies at import-time
+                from backend.core.database import get_db
+                db = await get_db()
+                try:
+                    row = await db.execute(
+                        "SELECT name FROM jurisdictions WHERE id = ?",
+                        (req.jurisdiction_id,),
+                    )
+                    r = await row.fetchone()
+                    jurisdiction_filter = r[0] if r else None
+                finally:
+                    await db.close()
+            except Exception:
+                jurisdiction_filter = str(req.jurisdiction_id)
 
         context_docs = similarity_search(
             req.message,
             top_k=3,
             jurisdiction=jurisdiction_filter,
         )
+
         context_text = "\n---\n".join(context_docs) if context_docs else "No specific legal context found."
 
         # 2. Format the system prompt with context
