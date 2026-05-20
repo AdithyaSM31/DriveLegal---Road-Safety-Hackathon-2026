@@ -4,7 +4,7 @@
 // â”€â”€ DEPLOYMENT CONFIG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Automatically switches between local dev and Render production.
 // Update RENDER_URL when your Render deployment is live.
-const RENDER_URL = "https://drivelegal.onrender.com";
+const RENDER_URL = "https://drivelegal-road-safety-hackathon-2026.onrender.com";
 const API_BASE = (window.location.hostname === "localhost" ||
                   window.location.hostname === "127.0.0.1")
   ? ""           // Local: use relative paths (uvicorn serves everything)

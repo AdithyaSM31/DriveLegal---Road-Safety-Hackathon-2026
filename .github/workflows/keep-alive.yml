@@ -19,7 +19,7 @@ jobs:
           echo "Pinging DriveLegal backend at $(date)..."
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
-            https://drivelegal.onrender.com/api/health)
+            https://drivelegal-road-safety-hackathon-2026.onrender.com/api/health)
 
           if [ "$STATUS" = "200" ]; then
             echo "✅ Backend is alive — HTTP $STATUS"
