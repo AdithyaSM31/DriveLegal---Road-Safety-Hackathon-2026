@@ -1029,8 +1029,20 @@ async function fetchSpeedLimit(lat, lon) {
         if (!Number.isNaN(n)) speedLimit = n;
       }
     }
+    
+    // Save to localStorage for offline cache
+    localStorage.setItem("drivelegal_last_speed_limit", speedLimit);
   } catch (err) {
     console.error("Overpass API speed limit retrieval failed:", err);
+    // Load from cache if offline
+    const cached = localStorage.getItem("drivelegal_last_speed_limit");
+    if (cached) {
+      const n = parseInt(cached, 10);
+      if (!Number.isNaN(n)) {
+        speedLimit = n;
+        console.log("[DriveLegal] Loaded offline cached speed limit:", speedLimit);
+      }
+    }
   }
 
   // Update dashboard Speed Circular Sign and Gauge
