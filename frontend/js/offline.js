@@ -2,6 +2,13 @@ const DB_NAME = "drivelegal-offline";
 const DB_VERSION = 1;
 const STORE_NAME = "fine_schedules";
 
+// ── DEPLOYMENT CONFIG ──────────────────────────────────────
+const RENDER_URL = "https://drivelegal-road-safety-hackathon-2026.onrender.com";
+const API_BASE = (window.location.hostname === "localhost" ||
+                  window.location.hostname === "127.0.0.1")
+  ? ""           // Local: use relative paths
+  : RENDER_URL;  // Production: point to Render backend
+
 let dbInstance = null;
 
 // OPEN INDEXEDDB
@@ -55,7 +62,7 @@ export async function syncOfflineData() {
   }
 
   try {
-    const response = await fetch("/api/laws/export/all");
+    const response = await fetch(`${API_BASE}/api/laws/export/all`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch offline dataset");
