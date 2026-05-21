@@ -10,6 +10,100 @@ const API_BASE = (window.location.hostname === "localhost" ||
   ? ""           // Local: use relative paths (uvicorn serves everything)
   : RENDER_URL;  // Production: point to Render backend
 
+// ── FIREBASE AUTHENTICATION ──
+const firebaseConfig = {
+  apiKey: "AIzaSyAezVKmrmQ7ozOozgYQ4QpLOTfUzSRnsGc",
+  authDomain: "drivelegal-30073.firebaseapp.com",
+  projectId: "drivelegal-30073",
+  storageBucket: "drivelegal-30073.firebasestorage.app",
+  messagingSenderId: "796401271068",
+  appId: "1:796401271068:web:6ea83a63bae85b0839bad9",
+  measurementId: "G-YHSFETN9D2"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();
+
+let currentUser = null;
+
+auth.onAuthStateChanged((user) => {
+  const overlay = document.getElementById("auth-overlay");
+  if (user) {
+    currentUser = user;
+    overlay.style.display = "none";
+    updateUserUI(user);
+    // Restart any necessary timers or background tasks here
+  } else {
+    currentUser = null;
+    overlay.style.display = "flex";
+  }
+});
+
+function updateUserUI(user) {
+  const greetingEl = document.getElementById("greeting-text");
+  const avatarEl = document.querySelector(".sidebar-user .user-avatar");
+  const nameEl = document.querySelector(".sidebar-user .user-name");
+  const mhAvatar = document.querySelector(".mh-right .avatar-sm");
+  
+  const displayName = user.displayName || user.email.split('@')[0];
+  const initials = displayName.substring(0, 2).toUpperCase();
+
+  if (greetingEl) {
+    greetingEl.innerHTML = `Good Day, ${displayName} 👋`;
+  }
+  if (nameEl) nameEl.textContent = displayName;
+  if (avatarEl) avatarEl.textContent = initials;
+  if (mhAvatar) mhAvatar.textContent = initials;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnGoogle = document.getElementById("btn-google-login");
+  const btnEmailLogin = document.getElementById("btn-email-login");
+  const btnEmailSignup = document.getElementById("btn-email-signup");
+  const authError = document.getElementById("auth-error");
+
+  const getEmailPass = () => {
+    return {
+      email: document.getElementById("auth-email").value.trim(),
+      pass: document.getElementById("auth-password").value
+    };
+  };
+
+  btnGoogle?.addEventListener("click", () => {
+    authError.textContent = "";
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => {
+      authError.textContent = err.message;
+    });
+  });
+
+  btnEmailLogin?.addEventListener("click", () => {
+    authError.textContent = "";
+    const { email, pass } = getEmailPass();
+    if (!email || !pass) return authError.textContent = "Please enter email and password";
+    auth.signInWithEmailAndPassword(email, pass).catch(err => {
+      authError.textContent = err.message;
+    });
+  });
+
+  btnEmailSignup?.addEventListener("click", () => {
+    authError.textContent = "";
+    const { email, pass } = getEmailPass();
+    if (!email || !pass) return authError.textContent = "Please enter email and password";
+    auth.createUserWithEmailAndPassword(email, pass).catch(err => {
+      authError.textContent = err.message;
+    });
+  });
+
+  const btnLogout = document.getElementById("btn-logout");
+  btnLogout?.addEventListener("click", () => {
+    auth.signOut();
+  });
+});
+
+
 // â”€â”€ KEEP-ALIVE PING (Layer 3 — Frontend) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Pings the backend every 8 minutes while any browser tab is open.
 // Works alongside UptimeRobot (Layer 1) and GitHub Actions (Layer 2).
