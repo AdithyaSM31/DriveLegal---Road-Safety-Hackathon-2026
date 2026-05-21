@@ -206,7 +206,7 @@ ul{list-style:none;}
 .filter-wrap{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border-bright);border-radius:10px;min-width:160px;}
 .filter-wrap i{color:var(--text-muted);}
 .filter-select,.page-size-sel{background:none;border:none;outline:none;font-size:0.85rem;color:var(--text);cursor:pointer;width:100%;}
-option{background:var(--bg-card);}
+option{background:#0f172a;color:var(--text);}
 .table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;overflow-x:auto;}
 .laws-table{width:100%;border-collapse:collapse;font-size:0.875rem;}
 .laws-table thead tr{background:var(--bg-elevated);}
