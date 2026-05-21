@@ -1,5 +1,5 @@
-const CACHE = 'drivelegal-v17';
-const ASSETS = ['/', '/index.html', '/styles.css?v=17', '/app.js?v=17', '/manifest.json'];
+const CACHE = 'drivelegal-v18';
+const ASSETS = ['/', '/index.html', '/styles.css?v=18', '/app.js?v=18', '/manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
