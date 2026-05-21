@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "796401271068",
+    "project_id": "drivelegal-30073",
+    "storage_bucket": "drivelegal-30073.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796401271068:android:e73a65f6fca1bf9b39bad9",
+        "android_client_info": {
+          "package_name": "com.drivelegal.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "796401271068-0h4jd2lhdrmnoshhedldhs7mvse43tb2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbJEWdORbkqTPlN4fc2dC_hTW2kjQkv0I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "796401271068-0h4jd2lhdrmnoshhedldhs7mvse43tb2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -78,12 +78,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-  btnGoogle?.addEventListener("click", () => {
+  btnGoogle?.addEventListener("click", async () => {
     authError.textContent = "Redirecting to Google...";
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithRedirect(provider).catch(err => {
+    try {
+      if (window.Capacitor && window.Capacitor.isNativePlatform() && window.NativeFirebaseAuthentication) {
+        const result = await window.NativeFirebaseAuthentication.signInWithGoogle();
+        const credential = firebase.auth.GoogleAuthProvider.credential(result.credential?.idToken);
+        await auth.signInWithCredential(credential);
+      } else {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithRedirect(provider);
+      }
+    } catch(err) {
       authError.textContent = err.message;
-    });
+    }
   });
 
   btnEmailLogin?.addEventListener("click", () => {

@@ -18,10 +18,13 @@
   },
   "homepage": "https://github.com/AdithyaSM31/DriveLegal---Road-Safety-Hackathon-2026#readme",
   "dependencies": {
-    "@capacitor/core": "^8.3.4"
+    "@capacitor-firebase/authentication": "^8.2.0",
+    "@capacitor/core": "^8.3.4",
+    "firebase": "^12.13.0"
   },
   "devDependencies": {
     "@capacitor/android": "^8.3.4",
-    "@capacitor/cli": "^8.3.4"
+    "@capacitor/cli": "^8.3.4",
+    "esbuild": "^0.28.0"
   }
 }
