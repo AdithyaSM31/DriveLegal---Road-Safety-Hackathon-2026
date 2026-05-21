@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-  <link rel="stylesheet" href="styles.css?v=15">
+  <link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 
@@ -51,7 +51,12 @@
       </div>
       <div class="mh-right">
         <button class="icon-btn"><i class="fas fa-bell"></i><span class="noti-dot"></span></button>
-        <div class="avatar-sm">AS</div>
+        <div class="mh-profile-wrap">
+          <div class="avatar-sm" id="mh-avatar" style="cursor: pointer;">AS</div>
+          <div class="mh-dropdown" id="mh-dropdown">
+            <button id="btn-logout-mobile"><i class="fas fa-arrow-right-from-bracket"></i> Sign out</button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -290,6 +295,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
 <script type="module" src="js/offline.js"></script>
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

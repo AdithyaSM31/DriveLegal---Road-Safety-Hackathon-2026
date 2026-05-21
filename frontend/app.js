@@ -101,6 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
   btnLogout?.addEventListener("click", () => {
     auth.signOut();
   });
+
+  const btnLogoutMobile = document.getElementById("btn-logout-mobile");
+  btnLogoutMobile?.addEventListener("click", () => {
+    auth.signOut();
+  });
+
+  const mhAvatarEl = document.getElementById("mh-avatar");
+  const mhDropdownEl = document.getElementById("mh-dropdown");
+  mhAvatarEl?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    mhDropdownEl?.classList.toggle("open");
+  });
+  
+  document.addEventListener("click", (e) => {
+    if (mhDropdownEl && mhDropdownEl.classList.contains("open") && !e.target.closest(".mh-profile-wrap")) {
+      mhDropdownEl.classList.remove("open");
+    }
+  });
 });
 
 

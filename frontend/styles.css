@@ -614,3 +614,49 @@ option{background:#0f172a;color:var(--text);}
   margin-top: 14px;
   min-height: 20px;
 }
+/* -- MOBILE PROFILE DROPDOWN -- */
+.mh-profile-wrap {
+  position: relative;
+}
+.mh-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 140px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 300;
+}
+.mh-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.mh-dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 0.85rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+.mh-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.mh-dropdown button i {
+  color: var(--danger);
+}
