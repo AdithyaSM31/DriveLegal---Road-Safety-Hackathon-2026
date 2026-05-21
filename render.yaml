@@ -10,11 +10,9 @@ services:
     envVars:
       - key: PYTHONPATH
         value: /app
-      - key: PORT
-        value: "8000"
-      # Set your Vercel frontend URL here after deployment
+      # Render sets PORT automatically — do NOT override it here
       - key: CORS_ORIGINS
-        value: https://drivelegal.vercel.app
+        value: https://drivelegal-road-safety-hackathon-20.vercel.app
 
     # Persistent disk — survives restarts, keeps SQLite + Chroma index intact
     disk:

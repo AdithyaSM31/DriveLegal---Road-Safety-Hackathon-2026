@@ -304,9 +304,9 @@ document.getElementById("page-size")?.addEventListener("change", (e) => {
 async function loadLocations() {
   try {
     const [states, violations, vehicles] = await Promise.all([
-      fetch(`${API_BASE}/api/locations").then((r) => r.json()),
-      fetch(`${API_BASE}/api/locations/violations").then((r) => r.json()),
-      fetch(`${API_BASE}/api/locations/vehicle-classes").then((r) => r.json()),
+      fetch(`${API_BASE}/api/locations`).then((r) => r.json()),
+      fetch(`${API_BASE}/api/locations/violations`).then((r) => r.json()),
+      fetch(`${API_BASE}/api/locations/vehicle-classes`).then((r) => r.json()),
     ]);
 
     const stateEl = document.getElementById("calc-state");
@@ -364,7 +364,7 @@ document.getElementById("btn-calc")?.addEventListener("click", async () => {
   btn.disabled = true;
 
   try {
-    const res = await fetch(`${API_BASE}/api/challan/calculate", {
+    const res = await fetch(`${API_BASE}/api/challan/calculate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
