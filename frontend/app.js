@@ -64,6 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnEmailSignup = document.getElementById("btn-email-signup");
   const authError = document.getElementById("auth-error");
 
+  // Handle redirect errors (important for mobile WebViews)
+  auth.getRedirectResult().catch((err) => {
+    if (authError && err.message) {
+      authError.textContent = err.message;
+    }
+  });
+
   const getEmailPass = () => {
     return {
       email: document.getElementById("auth-email").value.trim(),
@@ -72,9 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   btnGoogle?.addEventListener("click", () => {
-    authError.textContent = "";
+    authError.textContent = "Redirecting to Google...";
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(err => {
+    auth.signInWithRedirect(provider).catch(err => {
       authError.textContent = err.message;
     });
   });
