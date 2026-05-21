@@ -10,7 +10,7 @@ const API_BASE = (window.location.hostname === "localhost" ||
   ? ""           // Local: use relative paths (uvicorn serves everything)
   : RENDER_URL;  // Production: point to Render backend
 
-// â”€â”€ KEEP-ALIVE PING (Layer 3 â€” Frontend) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ KEEP-ALIVE PING (Layer 3 — Frontend) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Pings the backend every 8 minutes while any browser tab is open.
 // Works alongside UptimeRobot (Layer 1) and GitHub Actions (Layer 2).
 (function startKeepAlive() {
@@ -19,9 +19,9 @@ const API_BASE = (window.location.hostname === "localhost" ||
   async function pingBackend() {
     try {
       const res = await fetch(`${API_BASE}/api/health`, { cache: "no-store" });
-      if (res.ok) console.log("[DriveLegal] Keep-alive ping âœ… â€” backend is awake.");
+      if (res.ok) console.log("[DriveLegal] Keep-alive ping âœ… — backend is awake.");
     } catch {
-      console.log("[DriveLegal] Keep-alive ping sent â€” backend may be waking up...");
+      console.log("[DriveLegal] Keep-alive ping sent — backend may be waking up...");
     }
   }
 
@@ -181,7 +181,7 @@ async function loadLaws() {
     }
     updatePageInfo();
     renderPageBtns();
-    showToast("Using offline law data â€” server unavailable", "warn");
+    showToast("Using offline law data — server unavailable", "warn");
   }
 }
 
@@ -192,10 +192,10 @@ function renderLawsTable(laws) {
       const isSpecial = (l.first_offence_fine || 0) > 10000;
       return `<tr class="law-row" data-id="${l.id}">
       <td><span class="sec-link"><i class="fas fa-book-open"></i> Sec ${l.section_reference || "N/A"}</span></td>
-      <td style="color:var(--text)">${l.violation_name || l.name || "â€”"}</td>
-      <td class="amount">â‚¹${Number(l.first_offence_fine || 0).toLocaleString("en-IN")}</td>
-      <td class="amount">â‚¹${Number(l.subsequent_offence_fine || 0).toLocaleString("en-IN")}</td>
-      <td>${l.imprisonment_text || "â€”"}</td>
+      <td style="color:var(--text)">${l.violation_name || l.name || "—"}</td>
+      <td class="amount">₹${Number(l.first_offence_fine || 0).toLocaleString("en-IN")}</td>
+      <td class="amount">₹${Number(l.subsequent_offence_fine || 0).toLocaleString("en-IN")}</td>
+      <td>${l.imprisonment_text || "—"}</td>
       <td><span class="status-badge ${isSpecial ? "status-special" : "status-active"}">${isSpecial ? "Special" : "Active"}</span></td>
     </tr>`;
     })
@@ -259,12 +259,12 @@ function getPageRange(current, total) {
 // Law Modal
 function openLawModal(law) {
   document.getElementById("modal-title").textContent =
-    `Â§ ${law.section_reference} â€” ${law.violation_name}`;
+    `Â§ ${law.section_reference} — ${law.violation_name}`;
   document.getElementById("modal-content").innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="cr-row"><div class="cr-ico blue"><i class="fas fa-gavel"></i></div><div class="cr-info"><strong>Violation</strong><span>${law.violation_name || "â€”"}</span></div></div>
-      <div class="cr-row"><div class="cr-ico orange"><i class="fas fa-indian-rupee-sign"></i></div><div class="cr-info"><strong>First Offence Fine</strong><span>â‚¹${Number(law.first_offence_fine || 0).toLocaleString("en-IN")}</span></div></div>
-      <div class="cr-row"><div class="cr-ico red"><i class="fas fa-repeat"></i></div><div class="cr-info"><strong>Repeat Offence Fine</strong><span>â‚¹${Number(law.subsequent_offence_fine || 0).toLocaleString("en-IN")}</span></div></div>
+      <div class="cr-row"><div class="cr-ico blue"><i class="fas fa-gavel"></i></div><div class="cr-info"><strong>Violation</strong><span>${law.violation_name || "—"}</span></div></div>
+      <div class="cr-row"><div class="cr-ico orange"><i class="fas fa-indian-rupee-sign"></i></div><div class="cr-info"><strong>First Offence Fine</strong><span>₹${Number(law.first_offence_fine || 0).toLocaleString("en-IN")}</span></div></div>
+      <div class="cr-row"><div class="cr-ico red"><i class="fas fa-repeat"></i></div><div class="cr-info"><strong>Repeat Offence Fine</strong><span>₹${Number(law.subsequent_offence_fine || 0).toLocaleString("en-IN")}</span></div></div>
       <div class="cr-row"><div class="cr-ico blue"><i class="fas fa-bars-progress"></i></div><div class="cr-info"><strong>Imprisonment</strong><span>${law.imprisonment_text || "None"}</span></div></div>
       ${law.full_text ? `<div style="padding:14px;background:var(--bg-elevated);border-radius:10px;font-size:0.82rem;color:var(--text-sec);line-height:1.7">${law.full_text}</div>` : ""}
     </div>`;
@@ -312,7 +312,7 @@ async function loadLocations() {
     const stateEl = document.getElementById("calc-state");
     if (stateEl && Array.isArray(states)) {
       stateEl.innerHTML =
-        `<option value="">â€” Select State â€”</option>` +
+        `<option value="">— Select State —</option>` +
         states
           .map((s) => `<option value="${s.id}">${s.name}</option>`)
           .join("");
@@ -321,7 +321,7 @@ async function loadLocations() {
     const violEl = document.getElementById("calc-violation");
     if (violEl && Array.isArray(violations)) {
       violEl.innerHTML =
-        `<option value="">â€” Select Violation â€”</option>` +
+        `<option value="">— Select Violation —</option>` +
         violations
           .map((v) => `<option value="${v.id}">${v.name}</option>`)
           .join("");
@@ -330,7 +330,7 @@ async function loadLocations() {
     const vehEl = document.getElementById("calc-vehicle");
     if (vehEl && Array.isArray(vehicles)) {
       vehEl.innerHTML =
-        `<option value="">â€” Any Vehicle â€”</option>` +
+        `<option value="">— Any Vehicle —</option>` +
         vehicles
           .map((v) => `<option value="${v.id}">${v.name}</option>`)
           .join("");
@@ -629,82 +629,53 @@ function appendMsg(text, isBot = false) {
 // ==========================================
 
 async function queryLegalLLM(prompt) {
-  const token = "hf_xxxxxxxxxxxxxxxxxxxxxxxx";
-  const cleanedPrompt = prompt.toLowerCase();
-
-  const isPlaceholderToken = !token || token.includes("xxxx");
   const isOffline = !navigator.onLine;
 
-  if (isPlaceholderToken || isOffline) {
+  if (isOffline) {
     console.log("[DriveLegal AI] Running in local offline smart fallback mode...");
     
+    const cleanedPrompt = prompt.toLowerCase();
     if (cleanedPrompt.includes("helmet")) {
-      return "Under Section 129 of the Motor Vehicles Act, 1988, wearing a protective helmet is strictly mandatory for both the rider and the pillion passenger. Riding without a helmet attracts a fine of â‚¹1,000 and can result in the disqualification of your driving license for a period of up to 3 months.";
+      return "Under Section 129 of the Motor Vehicles Act, 1988, wearing a protective helmet is strictly mandatory for both the rider and the pillion passenger. Riding without a helmet attracts a fine of ₹1,000 and can result in the disqualification of your driving license for a period of up to 3 months.";
     }
     if (cleanedPrompt.includes("speed") || cleanedPrompt.includes("overspeed")) {
-      return "Under Section 183 of the Motor Vehicles Act, 1988, driving a vehicle at a speed exceeding the maximum speed limit is a punishable offence. For Light Motor Vehicles (LMVs/cars), the fine is â‚¹1,000 to â‚¹2,000 for the first offence, whereas for Medium/Heavy passenger or goods vehicles, it is â‚¹2,000 to â‚¹4,000.";
+      return "Under Section 183 of the Motor Vehicles Act, 1988, driving a vehicle at a speed exceeding the maximum speed limit is a punishable offence. For Light Motor Vehicles (LMVs/cars), the fine is ₹1,000 to ₹2,000 for the first offence, whereas for Medium/Heavy passenger or goods vehicles, it is ₹2,000 to ₹4,000.";
     }
     if (cleanedPrompt.includes("drunk") || cleanedPrompt.includes("alcohol") || cleanedPrompt.includes("drink")) {
-      return "Under Section 185 of the Motor Vehicles Act, 1988, driving under the influence of alcohol (exceeding 30 mg per 100 ml of blood) or drugs is a severe offence. The first offence is punishable with a fine of up to â‚¹10,000 and/or imprisonment for up to 6 months.";
+      return "Under Section 185 of the Motor Vehicles Act, 1988, driving under the influence of alcohol (exceeding 30 mg per 100 ml of blood) or drugs is a severe offence. The first offence is punishable with a fine of up to ₹10,000 and/or imprisonment for up to 6 months.";
     }
     if (cleanedPrompt.includes("signal") || cleanedPrompt.includes("red light")) {
-      return "Jumping a red light or violating traffic signals falls under Section 184 (Dangerous Driving) of the Motor Vehicles Act, 1988. It attracts a fine of â‚¹1,000 to â‚¹5,000 and/or imprisonment of 6 months to 1 year, along with potential license suspension.";
+      return "Jumping a red light or violating traffic signals falls under Section 184 (Dangerous Driving) of the Motor Vehicles Act, 1988. It attracts a fine of ₹1,000 to ₹5,000 and/or imprisonment of 6 months to 1 year, along with potential license suspension.";
     }
     
-    return `[Offline Copilot Mode] I'm currently running in offline backup mode. For deep search, please ensure you are online and have configured a valid Hugging Face Access Token. 
-
+    return `[Offline Copilot Mode] I'm currently running in offline backup mode.
 You can ask me about:
-â€¢ Helmet laws and fines
-â€¢ Speed limit violations
-â€¢ Drunk driving penalties
-â€¢ Traffic signal jumping rules`;
+• Helmet laws and fines
+• Speed limit violations
+• Drunk driving penalties
+• Traffic signal jumping rules`;
   }
 
-  const systemContext =
-    "You are a professional traffic law assistant in India. Give precise advice according to the Indian Motor Vehicles Act, 1988. Keep it brief.";
-
   try {
-    const res = await fetch(
-      "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: `<|system|>
-${systemContext}
-
-<|user|>
-${prompt}
-
-<|assistant|>`,
-          parameters: {
-            max_new_tokens: 150,
-            temperature: 0.4,
-            return_full_text: false,
-          },
-        }),
+    const res = await fetch(`${API_BASE}/api/chat/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        message: prompt
+      }),
+    });
 
-    const data = await res.json();
-
-    console.log("HF Response:", data);
-
-    let reply =
-      "I'm sorry, I am currently unable to parse the legal databases.";
-
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      reply = data[0].generated_text.trim();
+    if (!res.ok) {
+      throw new Error(`Chat API failed: ${res.status}`);
     }
 
-    return reply;
+    const data = await res.json();
+    return data.reply || "I'm sorry, I couldn't process that request.";
   } catch (err) {
-    console.error("Hugging Face API inference failed:", err);
-
-    return "Error: Unable to connect to Legal AI databases.";
+    console.error("Chat API inference failed:", err);
+    return "Error: Unable to connect to DriveLegal AI services.";
   }
 }
 async function sendMessage() {
@@ -796,7 +767,7 @@ function escapeHtml(str) {
 
 // â”€â”€ ONLINE/OFFLINE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.addEventListener("offline", () =>
-  showToast("You are offline â€” using cached data", "warn"),
+  showToast("You are offline — using cached data", "warn"),
 );
 window.addEventListener("online", () => showToast("Back online!", "info"));
 
@@ -1144,21 +1115,14 @@ async function fetchSpeedLimit(lat, lon) {
   let speedLimit = 50;
 
   try {
-    const query = `[out:json];way(around:80, ${lat}, ${lon})[maxspeed];out tags;`;
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+    const url = `${API_BASE}/api/locations/speed-limit?lat=${lat}&lon=${lon}`;
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`Overpass HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`Speed Limit Proxy HTTP ${res.status}`);
 
     const data = await res.json();
-
-    if (data?.elements?.length > 0) {
-      const speedTag = data.elements[0]?.tags?.maxspeed;
-      if (speedTag) {
-        // maxspeed might be like "50", "50 mph", etc.
-        const n = parseInt(String(speedTag).replace(/[^0-9]/g, ""), 10);
-        if (!Number.isNaN(n)) speedLimit = n;
-      }
+    if (data.speed_limit) {
+      speedLimit = data.speed_limit;
     }
     
     // Save to localStorage for offline cache
@@ -1229,13 +1193,13 @@ function updateWeatherUI(temp, code) {
   
   const weatherWrap = document.querySelector(".weather-row");
   if (weatherWrap) {
-    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}Â°C â€¢ ${statusText}`;
+    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}°C • ${statusText}`;
   }
   
   const statVal = document.querySelector(".weather-row")?.previousElementSibling;
   if (statVal && statVal.classList.contains("stat-val")) {
     statVal.textContent = statusText;
-    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}Â°C`;
+    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}°C`;
   }
 }
 

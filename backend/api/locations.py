@@ -3,8 +3,11 @@ DriveLegal — /api/locations endpoint.
 Provides country and jurisdiction data for the location picker.
 """
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
+import urllib.request
+import urllib.parse
+import json
 
 from backend.core.database import (
     get_all_countries,
@@ -77,3 +80,29 @@ async def list_violations(
 async def list_vehicle_classes():
     """Get all vehicle classes (Two-wheeler, LMV, HMV, Commercial)."""
     return await get_vehicle_classes()
+
+
+@router.get("/speed-limit")
+async def get_speed_limit(lat: float, lon: float):
+    """Proxy for OpenStreetMap Overpass API to bypass browser CORS."""
+    query = f"[out:json];way(around:80, {lat}, {lon})[maxspeed];out tags;"
+    encoded_query = urllib.parse.quote(query)
+    url = f"https://overpass-api.de/api/interpreter?data={encoded_query}"
+    
+    req = urllib.request.Request(url, headers={'User-Agent': 'DriveLegal-App/1.0'})
+    try:
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            speed_limit = 50 # Default
+            if data and data.get("elements") and len(data["elements"]) > 0:
+                speed_tag = data["elements"][0].get("tags", {}).get("maxspeed")
+                if speed_tag:
+                    # Extract numeric part (e.g., "50", "50 mph")
+                    num_str = "".join(filter(str.isdigit, str(speed_tag)))
+                    if num_str:
+                        speed_limit = int(num_str)
+            return {"speed_limit": speed_limit}
+    except Exception as e:
+        print(f"Overpass API proxy error: {e}")
+        # Return fallback on error
+        return {"speed_limit": 50, "error": str(e)}
