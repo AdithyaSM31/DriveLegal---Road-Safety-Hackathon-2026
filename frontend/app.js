@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await auth.signInWithCredential(credential);
       } else {
         const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithRedirect(provider);
+        await auth.signInWithPopup(provider);
       }
     } catch(err) {
       authError.textContent = err.message;
