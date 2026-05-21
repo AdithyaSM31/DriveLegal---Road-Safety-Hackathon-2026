@@ -83,7 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       if (window.Capacitor && window.Capacitor.isNativePlatform() && window.NativeFirebaseAuthentication) {
         const result = await window.NativeFirebaseAuthentication.signInWithGoogle({
-          useCredentialManager: false
+          useCredentialManager: false,
+          clientId: "796401271068-0h4jd2lhdrmnoshhedldhs7mvse43tb2.apps.googleusercontent.com"
         });
         const credential = firebase.auth.GoogleAuthProvider.credential(result.credential?.idToken);
         await auth.signInWithCredential(credential);
