@@ -623,7 +623,7 @@ option{background:#0f172a;color:var(--text);}
   top: 100%;
   right: 0;
   margin-top: 10px;
-  background: var(--bg-elevated);
+  background: rgba(13, 17, 23, 0.95);
   border: 1px solid var(--border-bright);
   border-radius: 12px;
   padding: 8px;
