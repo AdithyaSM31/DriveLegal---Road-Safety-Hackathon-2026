@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "796401271068-vb001g6bitjr9j8bvfquqci1vs3aad9m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drivelegal.app",
+            "certificate_hash": "957e7222262a4db25c1db70501cafc25888ede82"
+          }
+        },
+        {
           "client_id": "796401271068-0h4jd2lhdrmnoshhedldhs7mvse43tb2.apps.googleusercontent.com",
           "client_type": 3
         }
