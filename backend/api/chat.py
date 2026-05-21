@@ -8,7 +8,6 @@ from fastapi import APIRouter, HTTPException
 
 from backend.models.schemas import ChatRequest, ChatResponse
 from backend.core.llm import get_llm
-from backend.core.embeddings import similarity_search
 from backend.core.prompts import SYSTEM_PROMPT
 
 router = APIRouter(prefix="/api/chat", tags=["AI Chatbot"])
@@ -35,40 +34,10 @@ async def chat(req: ChatRequest):
         )
 
     try:
-        # 1. Retrieve relevant law context from ChromaDB
-        # Optional jurisdiction filtering is best-effort: ChatRequest provides
-        # jurisdiction_id (numeric), but Chroma metadata stores jurisdiction name.
-        # We still allow passing jurisdiction_id as a string to match if your metadata
-        # uses numeric strings.
-        # Chroma metadata stores jurisdiction as a human-readable name (e.g., "Maharashtra").
-        # The API request provides jurisdiction_id (numeric). Map id -> jurisdiction name.
-        jurisdiction_filter = None
-        if req.jurisdiction_id is not None:
-            try:
-                # Local import to avoid circular dependencies at import-time
-                from backend.core.database import get_db
-                db = await get_db()
-                try:
-                    row = await db.execute(
-                        "SELECT name FROM jurisdictions WHERE id = ?",
-                        (req.jurisdiction_id,),
-                    )
-                    r = await row.fetchone()
-                    jurisdiction_filter = r[0] if r else None
-                finally:
-                    await db.close()
-            except Exception:
-                jurisdiction_filter = str(req.jurisdiction_id)
-
-        context_docs = similarity_search(
-            req.message,
-            top_k=3,
-            jurisdiction=jurisdiction_filter,
-        )
-
-        context_text = "\n---\n".join(context_docs) if context_docs else "No specific legal context found."
-
-        # 2. Format the system prompt with context
+        # 1. Format the system prompt with a generic context since we are bypassing
+        # memory-heavy local vector embeddings for the free tier to prevent OOM kills.
+        # Llama 3 70B natively understands the Indian Motor Vehicles Act extremely well.
+        context_text = "Please answer based on your deep knowledge of the Indian Motor Vehicles Act, 1988."
         formatted_system_prompt = SYSTEM_PROMPT.format(context=context_text)
 
         messages = [
@@ -76,14 +45,11 @@ async def chat(req: ChatRequest):
             ("human", req.message),
         ]
 
-        # 3. Generate response via Groq
+        # 2. Generate response via Groq
         response = llm.invoke(messages)
 
-        # 4. Return structured citations
-        citations = [
-            {"source": snippet, "section": None, "jurisdiction": None}
-            for snippet in context_docs
-        ]
+        # 3. Return structured citations (empty for now without RAG)
+        citations = []
 
         return ChatResponse(
             reply=response.content,
