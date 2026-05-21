@@ -5,10 +5,14 @@
 // Automatically switches between local dev and Render production.
 // Update RENDER_URL when your Render deployment is live.
 const RENDER_URL = "https://drivelegal-road-safety-hackathon-2026.onrender.com";
-const API_BASE = (window.location.hostname === "localhost" ||
-                  window.location.hostname === "127.0.0.1")
-  ? ""           // Local: use relative paths (uvicorn serves everything)
-  : RENDER_URL;  // Production: point to Render backend
+let API_BASE;
+if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+  API_BASE = RENDER_URL;
+} else if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  API_BASE = "";
+} else {
+  API_BASE = RENDER_URL;
+}
 
 // ── FIREBASE AUTHENTICATION ──
 const firebaseConfig = {
