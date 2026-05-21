@@ -82,7 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
     authError.textContent = "Redirecting to Google...";
     try {
       if (window.Capacitor && window.Capacitor.isNativePlatform() && window.NativeFirebaseAuthentication) {
-        const result = await window.NativeFirebaseAuthentication.signInWithGoogle();
+        const result = await window.NativeFirebaseAuthentication.signInWithGoogle({
+          useCredentialManager: false
+        });
         const credential = firebase.auth.GoogleAuthProvider.credential(result.credential?.idToken);
         await auth.signInWithCredential(credential);
       } else {
