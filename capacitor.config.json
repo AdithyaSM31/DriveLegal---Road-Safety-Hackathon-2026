@@ -1,5 +1,11 @@
 {
   "appId": "com.drivelegal.app",
   "appName": "DriveLegal",
-  "webDir": "frontend"
+  "webDir": "frontend",
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": ["google.com"]
+    }
+  }
 }
