@@ -108,7 +108,7 @@ function setGreeting() {
   const g =
     h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
   const el = document.getElementById("greeting-text");
-  if (el) el.textContent = `${g}, Arjun ðŸ‘‹`;
+  if (el) el.textContent = g + ", Adithya 👋";
 }
 setGreeting();
 
