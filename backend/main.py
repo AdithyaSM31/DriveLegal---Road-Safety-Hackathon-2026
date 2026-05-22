@@ -65,7 +65,8 @@ ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://localhost:3000",
-    "http://localhost",       # Capacitor Android
+    "http://localhost",       # Capacitor Android (Legacy)
+    "https://localhost",      # Capacitor Android (Capacitor v6+)
     "capacitor://localhost",  # Capacitor iOS
     "ionic://localhost",      # Ionic iOS legacy
     "https://drivelegal-road-safety-hackathon-2026.vercel.app", # Main Vercel deployment
