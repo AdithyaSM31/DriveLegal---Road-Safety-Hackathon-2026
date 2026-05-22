@@ -138,10 +138,20 @@ document.addEventListener("DOMContentLoaded", () => {
     e.stopPropagation();
     mhDropdownEl?.classList.toggle("open");
   });
+
+  const btnNoti = document.getElementById("btn-notifications");
+  const notiDropdown = document.getElementById("noti-dropdown");
+  btnNoti?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    notiDropdown?.classList.toggle("open");
+  });
   
   document.addEventListener("click", (e) => {
     if (mhDropdownEl && mhDropdownEl.classList.contains("open") && !e.target.closest(".mh-profile-wrap")) {
       mhDropdownEl.classList.remove("open");
+    }
+    if (notiDropdown && notiDropdown.classList.contains("open") && !e.target.closest(".mh-noti-wrap")) {
+      notiDropdown.classList.remove("open");
     }
   });
 });
@@ -1369,6 +1379,26 @@ async function fetchSpeedCameras(lat, lon) {
 
 function renderSpeedCameras(cameras) {
   const container = document.getElementById("recent-alerts-container");
+  const notiList = document.getElementById("noti-list");
+  const notiDot = document.getElementById("noti-dot");
+  
+  if (notiList && notiDot) {
+    const nearCameras = cameras.filter(c => c.distance <= 1000);
+    if (nearCameras.length > 0) {
+      notiDot.style.display = "block";
+      notiList.innerHTML = nearCameras.map(cam => `
+        <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; text-align: left;">
+          <strong style="color: var(--danger);"><i class="fas fa-video"></i> Speed Camera Alert!</strong><br>
+          ${cam.name || "Camera"} is only ${cam.distance}m away.<br>
+          Limit: ${cam.maxspeed !== "Unknown" ? cam.maxspeed : "--"} km/h
+        </div>
+      `).join('');
+    } else {
+      notiDot.style.display = "none";
+      notiList.innerHTML = "No new notifications";
+    }
+  }
+
   if (!container) return;
   
   container.innerHTML = "";
