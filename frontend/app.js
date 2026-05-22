@@ -6,11 +6,14 @@
 // Update RENDER_URL when your Render deployment is live.
 const RENDER_URL = "https://drivelegal-road-safety-hackathon-2026.onrender.com";
 let API_BASE;
-if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+if (window.Capacitor || window.origin.startsWith("capacitor://") || (window.location.hostname === "localhost" && window.location.port === "")) {
+  // Native Capacitor App (Android uses localhost with no port, iOS uses capacitor://)
   API_BASE = RENDER_URL;
 } else if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+  // Local web development
   API_BASE = "";
 } else {
+  // Vercel / Render Production
   API_BASE = RENDER_URL;
 }
 
