@@ -1244,6 +1244,7 @@ document.addEventListener("DOMContentLoaded", () => {
 window.onLocationFound = function(lat, lon) {
   fetchWeatherData(lat, lon);
   fetchSpeedLimit(lat, lon);
+  fetchSpeedCameras(lat, lon);
 };
 
 // â”€â”€ OVERPASS SPEED LIMIT (OpenStreetMap) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1336,7 +1337,149 @@ function updateWeatherUI(temp, code) {
   const statVal = document.querySelector(".weather-row")?.previousElementSibling;
   if (statVal && statVal.classList.contains("stat-val")) {
     statVal.textContent = statusText;
-    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}°C`;
+    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}AC`;
   }
 }
 
+// ── NEARBY SPEED CAMERAS ──
+let lastCameraFetchLocation = null;
+
+async function fetchSpeedCameras(lat, lon) {
+  if (lastCameraFetchLocation) {
+    const dist = getDistanceFromLatLonInKm(lat, lon, lastCameraFetchLocation.lat, lastCameraFetchLocation.lon);
+    if (dist < 1.0) return; // Haven't moved 1km, don't refetch
+  }
+  
+  lastCameraFetchLocation = { lat, lon };
+  
+  try {
+    const url = `${API_BASE}/api/locations/speed-cameras?lat=${lat}&lon=${lon}&radius=5000`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch cameras");
+    const data = await res.json();
+    if (data.cameras) {
+      window.nearbyCameras = data.cameras;
+      renderSpeedCameras(data.cameras);
+      if (window.updateMapMarkers) window.updateMapMarkers();
+    }
+  } catch (err) {
+    console.error("Speed cameras fetch failed:", err);
+  }
+}
+
+function renderSpeedCameras(cameras) {
+  const container = document.getElementById("recent-alerts-container");
+  if (!container) return;
+  
+  container.innerHTML = "";
+  
+  if (cameras.length === 0) {
+    container.innerHTML = `
+      <div class="alert-row" style="justify-content: center; opacity: 0.7;">
+        <div class="alert-body"><div class="alert-sub">No active alerts in your area</div></div>
+      </div>
+    `;
+    return;
+  }
+  
+  const topCameras = cameras.slice(0, 3);
+  topCameras.forEach(cam => {
+    let distStr = cam.distance < 1000 ? cam.distance + " m" : (cam.distance/1000).toFixed(1) + " km";
+    let speedStr = cam.maxspeed !== "Unknown" ? `Limit: ${cam.maxspeed} km/h` : "Speed limit unknown";
+    container.innerHTML += `
+      <div class="alert-row">
+        <div class="alert-icon-wrap"><i class="fas fa-video"></i></div>
+        <div class="alert-body"><div class="alert-title">${cam.name || "Speed Camera Ahead"}</div><div class="alert-sub">${speedStr}</div></div>
+        <div class="alert-dist">${distStr}</div>
+      </div>
+    `;
+  });
+}
+
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; 
+  const dLat = deg2rad(lat2-lat1);
+  const dLon = deg2rad(lon2-lon1); 
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return R * c; 
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180);
+}
+
+// ── LEAFLET MAP OVERLAY ──
+document.addEventListener('DOMContentLoaded', () => {
+  const btnViewMap = document.getElementById("btn-view-map");
+  const mapOverlay = document.getElementById("map-overlay");
+  const closeMapBtn = document.getElementById("close-map");
+  
+  let leafletMap = null;
+  let userMarker = null;
+  let cameraMarkers = [];
+
+  btnViewMap?.addEventListener("click", () => {
+    mapOverlay.classList.add("show");
+    
+    // Initialize map
+    if (!leafletMap && window.L) {
+      let centerLat = window.currentLat || 20.5937;
+      let centerLon = window.currentLon || 78.9629;
+      
+      leafletMap = L.map("leaflet-map").setView([centerLat, centerLon], 15);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors"
+      }).addTo(leafletMap);
+      
+      const userIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: "<div style='background-color:var(--primary);width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 0 5px rgba(0,0,0,0.5);'></div>",
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      });
+
+      userMarker = L.marker([centerLat, centerLon], {icon: userIcon}).addTo(leafletMap)
+        .bindPopup("You are here");
+        
+      if (window.updateMapMarkers) window.updateMapMarkers();
+    } else if (leafletMap) {
+      // Refresh size and pan to user
+      leafletMap.invalidateSize();
+      if (window.currentLat && window.currentLon) {
+        leafletMap.setView([window.currentLat, window.currentLon]);
+        userMarker.setLatLng([window.currentLat, window.currentLon]);
+      }
+    }
+  });
+
+  closeMapBtn?.addEventListener("click", () => {
+    mapOverlay.classList.remove("show");
+  });
+
+  window.updateMapMarkers = function() {
+    if (!leafletMap || !window.nearbyCameras) return;
+    
+    cameraMarkers.forEach(m => leafletMap.removeLayer(m));
+    cameraMarkers = [];
+    
+    const camIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: "<div style='background-color:var(--danger);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 5px rgba(0,0,0,0.5);font-size:12px;'><i class='fas fa-video'></i></div>",
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+
+    window.nearbyCameras.forEach(cam => {
+      const marker = L.marker([cam.lat, cam.lon], {icon: camIcon})
+        .addTo(leafletMap)
+        .bindPopup(`<b>${cam.name || "Speed Camera"}</b><br>Limit: ${cam.maxspeed !== "Unknown" ? cam.maxspeed : "--"} km/h`);
+      cameraMarkers.push(marker);
+    });
+  }
+});

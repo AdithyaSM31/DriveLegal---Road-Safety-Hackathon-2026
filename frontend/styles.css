@@ -660,3 +660,42 @@ option{background:#0f172a;color:var(--text);}
 .mh-dropdown button i {
   color: var(--danger);
 }
+/* --- MAP OVERLAY --- */
+.map-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: rgba(10, 15, 25, 0.95);
+  backdrop-filter: blur(10px);
+  display: none;
+  flex-direction: column;
+}
+.map-overlay.show {
+  display: flex;
+}
+.close-map-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: all 0.2s;
+}
+.close-map-btn:hover {
+  background: var(--border);
+  transform: scale(1.05);
+}
