@@ -1192,7 +1192,26 @@ function updateVehicleSpeedUI(speed) {
       speedStatus.innerHTML = `<i class="fas fa-circle-check"></i> You're within the speed limit`;
     }
   }
-}
+    
+    // Update live traffic density estimate based on speed
+    const trafficVal = document.getElementById("live-traffic-val");
+    const trafficCars = document.getElementById("live-traffic-cars");
+    if (trafficVal && trafficCars) {
+      if (speed < 20) {
+        trafficVal.textContent = "High";
+        trafficVal.className = "stat-val danger";
+        trafficCars.innerHTML = `<i class="fas fa-car-side" style="color:var(--danger)"></i><i class="fas fa-car-side" style="color:var(--danger)"></i><i class="fas fa-car-side" style="color:var(--danger)"></i>`;
+      } else if (speed < 40) {
+        trafficVal.textContent = "Moderate";
+        trafficVal.className = "stat-val primary";
+        trafficCars.innerHTML = `<i class="fas fa-car-side" style="color:var(--primary)"></i><i class="fas fa-car-side" style="color:var(--primary)"></i><i class="fas fa-car-side"></i>`;
+      } else {
+        trafficVal.textContent = "Low";
+        trafficVal.className = "stat-val safe";
+        trafficCars.innerHTML = `<i class="fas fa-car-side" style="color:var(--success)"></i><i class="fas fa-car-side"></i><i class="fas fa-car-side"></i>`;
+      }
+    }
+  }
 
 function startSpeedSimulation() {
   if (simInterval) clearInterval(simInterval);
@@ -1347,7 +1366,7 @@ function updateWeatherUI(temp, code) {
   const statVal = document.querySelector(".weather-row")?.previousElementSibling;
   if (statVal && statVal.classList.contains("stat-val")) {
     statVal.textContent = statusText;
-    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}AC`;
+    weatherWrap.innerHTML = `<i class="fas ${iconClass}"></i> ${temp}°C`;
   }
 }
 
@@ -1377,6 +1396,21 @@ async function fetchSpeedCameras(lat, lon) {
   }
 }
 
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 200);
+  } catch(e) {}
+}
+
 function renderSpeedCameras(cameras) {
   const container = document.getElementById("recent-alerts-container");
   const notiList = document.getElementById("noti-list");
@@ -1385,6 +1419,9 @@ function renderSpeedCameras(cameras) {
   if (notiList && notiDot) {
     const nearCameras = cameras.filter(c => c.distance <= 1000);
     if (nearCameras.length > 0) {
+      if (notiDot.style.display !== "block") {
+        playBeep(); // Beep when new notification arrives
+      }
       notiDot.style.display = "block";
       notiList.innerHTML = nearCameras.map(cam => `
         <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; text-align: left;">
