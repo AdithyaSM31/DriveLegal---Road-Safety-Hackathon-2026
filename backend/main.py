@@ -65,9 +65,10 @@ ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://localhost:3000",
-    # Add your Vercel URL here after deployment, e.g.:
-    # "https://drivelegal.vercel.app",
-    # "https://drivelegal-git-main-youruser.vercel.app",
+    "http://localhost",       # Capacitor Android
+    "capacitor://localhost",  # Capacitor iOS
+    "ionic://localhost",      # Ionic iOS legacy
+    "https://drivelegal-road-safety-hackathon-2026.vercel.app", # Main Vercel deployment
 ]
 
 import os
