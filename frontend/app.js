@@ -1140,9 +1140,15 @@ function getLiveLocation() {
     },
     (error) => {
       console.warn("Geolocation failed or access denied:", error.message);
-      addrEl.textContent =
-        "MG Road, Bangalore, Karnataka (Location Access Denied)";
-      showToast("Could not retrieve live GPS coordinates.", "warn");
+      addrEl.textContent = "Marine Drive, Kochi, Kerala (Location Access Denied)";
+      showToast("Could not retrieve live GPS coordinates. Defaulting to Kochi.", "warn");
+      
+      // Fallback to Kochi for hackathon presentation if GPS fails
+      window.currentLat = 9.9312;
+      window.currentLon = 76.2673;
+      if (typeof window.onLocationFound === "function") {
+        window.onLocationFound(9.9312, 76.2673);
+      }
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
   );
