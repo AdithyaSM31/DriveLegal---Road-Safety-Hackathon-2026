@@ -1140,15 +1140,37 @@ function getLiveLocation() {
     },
     (error) => {
       console.warn("Geolocation failed or access denied:", error.message);
-      addrEl.textContent = "Marine Drive, Kochi, Kerala (Location Access Denied)";
-      showToast("Could not retrieve live GPS coordinates. Defaulting to Kochi.", "warn");
+      addrEl.innerHTML = '<i class="fas fa-spinner spin"></i> Estimating location...';
       
-      // Fallback to Kochi for hackathon presentation if GPS fails
-      window.currentLat = 9.9312;
-      window.currentLon = 76.2673;
-      if (typeof window.onLocationFound === "function") {
-        window.onLocationFound(9.9312, 76.2673);
-      }
+      // Smart IP-based fallback if GPS fails
+      fetch("https://get.geojs.io/v1/ip/geo.json")
+        .then(res => res.json())
+        .then(ipData => {
+          if (ipData && ipData.latitude && ipData.longitude) {
+            addrEl.textContent = `${ipData.city || "Unknown"}, ${ipData.region || "India"} (Estimated via Network)`;
+            showToast("GPS denied. Using estimated network location.", "warn");
+            
+            const lat = parseFloat(ipData.latitude);
+            const lon = parseFloat(ipData.longitude);
+            window.currentLat = lat;
+            window.currentLon = lon;
+            if (typeof window.onLocationFound === "function") {
+              window.onLocationFound(lat, lon);
+            }
+          } else {
+            throw new Error("Invalid IP location data");
+          }
+        })
+        .catch(err => {
+          // Ultimate fallback if both GPS and Network fail
+          addrEl.textContent = "Marine Drive, Kochi, Kerala (Offline Fallback)";
+          showToast("Could not retrieve location. Defaulting to offline cache.", "error");
+          window.currentLat = 9.9312;
+          window.currentLon = 76.2673;
+          if (typeof window.onLocationFound === "function") {
+            window.onLocationFound(9.9312, 76.2673);
+          }
+        });
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
   );
