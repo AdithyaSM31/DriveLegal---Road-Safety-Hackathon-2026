@@ -191,7 +191,7 @@
         </div>
         <div class="calc-footer">
           <div class="calc-footer-note"><i class="fas fa-scale-balanced"></i><div><strong>Please Note</strong><p>Fines may vary based on amendments and state rules. This calculator is for informational purposes only.</p></div></div>
-          <button class="btn-outline">View MV Act, 1988 <i class="fas fa-up-right-from-square"></i></button>
+          <button class="btn-outline" id="btn-view-mvact">View MV Act, 1988 <i class="fas fa-up-right-from-square"></i></button>
         </div>
       </section>
 
@@ -207,10 +207,10 @@
           <div class="hud-card"><div class="hud-body"><div class="hud-label">TRAFFIC DENSITY <i class="fas fa-circle-info"></i></div><div class="hud-val text-warning" id="hud-traffic">Moderate</div><div class="hud-sub">Some slowdowns in high traffic zones.</div><div class="hud-trend"><i class="fas fa-arrow-trend-up"></i> 5% vs last week</div></div><div class="hud-ring orange"><i class="fas fa-car-side"></i></div></div>
         </div>
         <div class="chart-row">
-          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-bar"></i> Top 5 Traffic Violations</h3><a class="see-all">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="offenceChart"></canvas></div></div>
-          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3><a class="see-all">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="severityChart"></canvas></div></div>
+          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-bar"></i> Top 5 Traffic Violations</h3><a class="see-all" data-view-trigger="view-laws" style="cursor:pointer;">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="offenceChart"></canvas></div></div>
+          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3><a class="see-all" data-view-trigger="view-laws" style="cursor:pointer;">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="severityChart"></canvas></div></div>
         </div>
-        <div class="insight-bar"><div class="insight-left"><i class="fas fa-chart-line"></i><span class="text-primary"><strong>Insight</strong></span><span>Over speeding and non-helmet violations contribute to 72% of total violations.</span><span class="sep">|</span><span>Focus on enforcement in high-risk zones.</span></div><button class="btn-outline"><i class="fas fa-download"></i> Download Report</button></div>
+        <div class="insight-bar"><div class="insight-left"><i class="fas fa-chart-line"></i><span class="text-primary"><strong>Insight</strong></span><span>Over speeding and non-helmet violations contribute to 72% of total violations.</span><span class="sep">|</span><span>Focus on enforcement in high-risk zones.</span></div><button class="btn-outline" id="btn-download-analytics"><i class="fas fa-download"></i> Download Report</button></div>
       </section>
 
       <!-- ═══ AI ASSISTANT ═══ -->

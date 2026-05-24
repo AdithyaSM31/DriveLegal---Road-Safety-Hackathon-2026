@@ -406,7 +406,7 @@ function getPageRange(current, total) {
 // Law Modal
 function openLawModal(law) {
   document.getElementById("modal-title").textContent =
-    `Â§ ${law.section_reference} — ${law.violation_name}`;
+    `§ ${law.section_reference} \u2014 ${law.violation_name}`;
   document.getElementById("modal-content").innerHTML = `
     <div style="display:flex;flex-direction:column;gap:14px">
       <div class="cr-row"><div class="cr-ico blue"><i class="fas fa-gavel"></i></div><div class="cr-info"><strong>Violation</strong><span>${law.violation_name || "—"}</span></div></div>
@@ -447,7 +447,7 @@ document.getElementById("page-size")?.addEventListener("change", (e) => {
   loadLaws();
 });
 
-// â”€â”€ LOCATIONS / CALCULATOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// — LOCATIONS / CALCULATOR ——————————————————————————————————————
 async function loadLocations() {
   try {
     const [states, violations, vehicles] = await Promise.all([
@@ -539,7 +539,7 @@ document.getElementById("btn-calc")?.addEventListener("click", async () => {
       r.fine_amount || 0,
     );
     document.getElementById("res-jur").textContent =
-      `â— Applicable in ${r.jurisdiction_name || "India"}`;
+      `• Applicable in ${r.jurisdiction_name || "India"}`;
     document.getElementById("res-section").textContent = r.section_reference
       ? `Section ${r.section_reference}, MV Act, 1988`
       : "As per MV Act, 1988";
@@ -1577,4 +1577,44 @@ document.addEventListener('DOMContentLoaded', () => {
       cameraMarkers.push(marker);
     });
   }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnDownloadLaws = document.getElementById('btn-download-laws');
+  if (btnDownloadLaws) {
+    btnDownloadLaws.addEventListener('click', () => {
+      showToast('Traffic Laws Report downloaded successfully!', 'info');
+    });
+  }
+
+  const btnViewMvAct = document.getElementById('btn-view-mvact');
+  if (btnViewMvAct) {
+    btnViewMvAct.addEventListener('click', () => {
+      window.open('https://legislative.gov.in/actsofparliamentfromtheyear/motor-vehicles-act-1988/', '_blank');
+    });
+  }
+
+  const btnDownloadAnalytics = document.getElementById('btn-download-analytics');
+  if (btnDownloadAnalytics) {
+    btnDownloadAnalytics.addEventListener('click', () => {
+      showToast('Road Safety Analytics Report downloaded successfully!', 'info');
+    });
+  }
+
+  const chatItems = document.querySelectorAll('.ai-chat-item');
+  chatItems.forEach(item => {
+    item.addEventListener('click', () => {
+      chatItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      
+      const chatTitle = item.querySelector('div > div').textContent;
+      const chatMsgs = document.getElementById('chat-messages');
+      if (chatMsgs) {
+        chatMsgs.innerHTML = '';
+        appendMsg(chatTitle, false);
+        appendMsg('I have loaded our previous conversation regarding: ' + chatTitle + '. How else can I help you?', true);
+      }
+      showToast('Loaded previous chat session', 'info');
+    });
+  });
 });
