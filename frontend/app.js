@@ -1617,8 +1617,32 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text('No laws data available currently.', 14, 40);
       }
       
-      doc.save('DriveLegal_Traffic_Laws.pdf');
-      showToast('Traffic Laws PDF generated dynamically!', 'success');
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+      const fileName = 'DriveLegal_Traffic_Laws.pdf';
+      
+      if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const { Filesystem, Share } = window.Capacitor.Plugins;
+        if (Filesystem && Share) {
+          Filesystem.writeFile({
+            path: fileName,
+            data: pdfBase64,
+            directory: 'CACHE'
+          }).then(result => {
+            Share.share({
+              title: fileName,
+              url: result.uri,
+              dialogTitle: 'Save or View PDF'
+            });
+            showToast('PDF ready to share/save!', 'success');
+          }).catch(e => {
+            console.error('File write error:', e);
+            showToast('Failed to save PDF on device', 'error');
+          });
+        }
+      } else {
+        doc.save(fileName);
+        showToast('Traffic Laws PDF generated dynamically!', 'success');
+      }
 
     });
   }
@@ -1685,8 +1709,32 @@ document.addEventListener('DOMContentLoaded', () => {
         headStyles: { fillColor: [231, 76, 60] }
       });
       
-      doc.save('DriveLegal_Analytics_Report.pdf');
-      showToast('Analytics PDF generated dynamically!', 'success');
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+      const fileName = 'DriveLegal_Analytics_Report.pdf';
+      
+      if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const { Filesystem, Share } = window.Capacitor.Plugins;
+        if (Filesystem && Share) {
+          Filesystem.writeFile({
+            path: fileName,
+            data: pdfBase64,
+            directory: 'CACHE'
+          }).then(result => {
+            Share.share({
+              title: fileName,
+              url: result.uri,
+              dialogTitle: 'Save or View PDF'
+            });
+            showToast('PDF ready to share/save!', 'success');
+          }).catch(e => {
+            console.error('File write error:', e);
+            showToast('Failed to save PDF on device', 'error');
+          });
+        }
+      } else {
+        doc.save(fileName);
+        showToast('Analytics PDF generated dynamically!', 'success');
+      }
 
     });
   }
