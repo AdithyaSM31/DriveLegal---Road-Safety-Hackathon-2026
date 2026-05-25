@@ -1378,13 +1378,28 @@ function updateWeatherUI(temp, code) {
   let statusText = "Clear";
   let iconClass = "fa-sun";
   
-  if (code > 50) {
-    statusText = "Rainy (Drive Slow)";
-    iconClass = "fa-cloud-showers-heavy";
-  } else if (code > 0) {
-    statusText = "Cloudy";
-    iconClass = "fa-cloud";
-  }
+  if (code === 45 || code === 48) {
+      statusText = "Foggy (Low Visibility)";
+      iconClass = "fa-smog";
+    } else if (code >= 51 && code <= 57) {
+      statusText = "Light Rain / Drizzle";
+      iconClass = "fa-cloud-rain";
+    } else if (code >= 61 && code <= 67) {
+      statusText = "Rainy (Drive Slow)";
+      iconClass = "fa-cloud-showers-heavy";
+    } else if (code >= 71 && code <= 77) {
+      statusText = "Snowy (Drive Slow)";
+      iconClass = "fa-snowflake";
+    } else if (code >= 80 && code <= 82) {
+      statusText = "Showers (Drive Slow)";
+      iconClass = "fa-cloud-showers-water";
+    } else if (code >= 95) {
+      statusText = "Stormy (Hazard)";
+      iconClass = "fa-bolt-lightning";
+    } else if (code > 0) {
+      statusText = "Cloudy";
+      iconClass = "fa-cloud";
+    }
   
   const weatherWrap = document.querySelector(".weather-row");
   if (weatherWrap) {
