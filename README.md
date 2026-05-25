@@ -17,6 +17,17 @@ Built for the **Road Safety Hackathon 2026**.
 
 ---
 
+## 💡 Hackathon Tech Additions (Latest Updates)
+
+1. **Native Android Port (Capacitor):** Fully packaged as an Android APK utilizing native device APIs (`@capacitor/filesystem` & `@capacitor/share`) to securely generate and share dynamic PDF reports directly from the device's offline cache.
+2. **Dynamic In-Browser PDF Generation:** Utilizes `jsPDF` and `AutoTable` injected locally to instantly generate beautiful, structured PDF reports for Traffic Laws and Analytics without relying on expensive backend document processors.
+3. **Smart IP-Based Geolocation Fallback:** If HTML5 hardware GPS fails (e.g., on a laptop/desktop without sensors), the app dynamically fails over to the `GeoJS` IP-Location API to guarantee localized weather and traffic data availability across all devices.
+4. **Granular WMO Weather Mapping:** Leverages the **Open-Meteo API** bound to real-time coordinates, accurately parsing highly granular WMO (World Meteorological Organization) weather codes to trigger contextual alerts like "Foggy (Low Visibility)" or "Snowy (Drive Slow)".
+5. **CartoDB Dark Matter Integration:** Upgraded Leaflet.js maps with high-contrast CartoDB Dark Matter tiles, perfectly harmonizing with the dark-mode tech aesthetic.
+6. **Robust Deployment Architecture:** Backend successfully deployed on Render with `/api/health` heartbeat endpoints monitored by UptimeRobot to completely eliminate server "cold-start" latency during live hackathon demos.
+
+---
+
 ## 🏗 Architecture
 
 DriveLegal uses a modern API-first approach, decoupling the SPA frontend from a robust FastAPI backend.
@@ -24,8 +35,8 @@ DriveLegal uses a modern API-first approach, decoupling the SPA frontend from a 
 ```mermaid
 graph TD
     %% Frontend Layer
-    subgraph Frontend [PWA Client]
-        UI[Vanilla JS SPA UI]
+    subgraph Frontend [PWA / Android Client]
+        UI[Vanilla JS SPA UI + Capacitor]
         SW[Service Worker]
         IDB[(IndexedDB)]
         
