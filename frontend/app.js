@@ -1021,18 +1021,21 @@ function initBeams() {
   function draw() {
     ctx.clearRect(0, 0, width, height);
 
-    let bgGrad = ctx.createRadialGradient(
-      width / 2,
-      height / 2,
-      10,
-      width / 2,
-      height / 2,
-      Math.max(width, height),
-    );
-    bgGrad.addColorStop(0, "#090d16");
-    bgGrad.addColorStop(1, "#040609");
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, width, height);
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (!isLight) {
+      let bgGrad = ctx.createRadialGradient(
+        width / 2,
+        height / 2,
+        10,
+        width / 2,
+        height / 2,
+        Math.max(width, height),
+      );
+      bgGrad.addColorStop(0, "#090d16");
+      bgGrad.addColorStop(1, "#040609");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+    }
 
     beams.forEach((beam) => {
       beam.phase += beam.speed;
