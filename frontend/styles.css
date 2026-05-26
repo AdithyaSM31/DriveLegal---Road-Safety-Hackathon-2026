@@ -643,7 +643,7 @@ option{background:#0f172a;color:var(--text);}
   top: 100%;
   right: 0;
   margin-top: 10px;
-  background: rgba(13, 17, 23, 0.95);
+  background: var(--bg-card);
   border: 1px solid var(--border-bright);
   border-radius: 12px;
   padding: 8px;
@@ -675,8 +675,8 @@ option{background:#0f172a;color:var(--text);}
   transition: background 0.2s;
 }
 .mh-dropdown button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
+    background: var(--bg-hover);
+  }
 .mh-dropdown button i {
   color: var(--danger);
 }
