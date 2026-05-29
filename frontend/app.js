@@ -1353,7 +1353,7 @@ async function fetchSpeedLimit(lat, lon) {
 
 async function fetchWeatherData(lat, lon) {
   try {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&models=best_match`);
     const data = await res.json();
     
     const temp = Math.round(data.current_weather.temperature);
