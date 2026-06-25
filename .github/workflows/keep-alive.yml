@@ -19,10 +19,12 @@ jobs:
           echo "Pinging DriveLegal backend at $(date)..."
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
-            https://drivelegal-road-safety-hackathon-2026.onrender.com/api/health)
+            https://drivelegal-road-safety-hackathon-2026.onrender.com/api/health || echo "TIMEOUT")
 
           if [ "$STATUS" = "200" ]; then
             echo "✅ Backend is alive — HTTP $STATUS"
+          elif [ "$STATUS" = "TIMEOUT" ]; then
+            echo "⏳ Ping timed out after 30s. Render is likely spinning up from a cold start!"
           else
             echo "⚠️  Backend returned HTTP $STATUS (may be waking up)"
           fi
