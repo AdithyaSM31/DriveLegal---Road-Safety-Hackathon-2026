@@ -130,7 +130,7 @@ If you prefer to run it natively:
 * **Rishi** — PWA Optimization & Offline Logic
 * **Marion** — Database Engineering & Seeding
 * **Nitin** — AI Engineering & RAG Pipeline
-* **Aysha** — Data Analytics & Backend Statistics
+* **Aysha** — Data Analytics & Backend Statistics 
 
 ---
 
