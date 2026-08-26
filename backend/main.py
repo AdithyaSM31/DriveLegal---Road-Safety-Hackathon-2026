@@ -82,7 +82,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -97,7 +97,7 @@ app.include_router(analytics_router)
 
 # ────────────────────────── Health Check ────────────────────────────────────
 
-@app.get("/api/health", tags=["System"])
+@app.api_route("/api/health", methods=["GET", "HEAD"], tags=["System"])
 async def health_check():
     """Health check endpoint."""
     return {"status": "ok", "app": APP_TITLE, "version": APP_VERSION}
