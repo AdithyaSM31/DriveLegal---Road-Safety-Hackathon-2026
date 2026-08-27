@@ -58,7 +58,16 @@ async def chat(req: ChatRequest):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"RAG Pipeline Error: {str(e)}")
+        import requests, os
+        api_key = os.environ.get("GROQ_API_KEY")
+        avail_models = "unknown"
+        if api_key:
+            try:
+                res = requests.get("https://api.groq.com/openai/v1/models", headers={"Authorization": f"Bearer {api_key}"})
+                avail_models = str([m.get("id") for m in res.json().get("data", [])])
+            except Exception as inner_e:
+                avail_models = f"fetch failed: {str(inner_e)}"
+        raise HTTPException(status_code=500, detail=f"RAG Pipeline Error: {str(e)} | Valid Models: {avail_models}")
 
 
 # Alias endpoint for backwards compatibility with any frontend code using /ask
