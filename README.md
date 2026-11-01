@@ -1,139 +1,86 @@
-# DriveLegal — India's Road Traffic Law Assistant
+# DriveLegal 2.0
 
-![DriveLegal Banner](./banner.png)
+An Indian road-law companion with a native **Kotlin / Jetpack Compose Android app**, responsive web client, and FastAPI backend. Originally built for the Road Safety Hackathon 2026.
 
-**DriveLegal** is an intelligent, offline-first Progressive Web App (PWA) designed to empower Indian citizens with instant access to the Motor Vehicles Act (1988), state-specific amendments, and a precise Challan Calculator. Featuring an AI Legal Assistant powered by Retrieval-Augmented Generation (RAG), DriveLegal ensures you always know your rights on the road, even without an internet connection.
+The v2 Android design follows the supplied five-screen references: warm off-white, black cards, amber accents, large type, a central Drive action, and lightweight glass-like surfaces.
 
-Built for the **Road Safety Hackathon 2026**.
+## Projects
 
----
+| Folder | Purpose |
+| --- | --- |
+| `android-v2/` | Native Kotlin v2 application — open this folder in Android Studio |
+| `android/` | Original Capacitor Android project, preserved |
+| `frontend/` | Responsive web/PWA client |
+| `backend/` | Shared FastAPI APIs, SQLite queries, optional grounded AI |
+| `docs/V2-AUDIT.md` | Confirmed defects, corrections, coverage, and remaining limitations |
 
-## 🌟 Key Features
+[Native build instructions](android-v2/README.md) · [Audit](docs/V2-AUDIT.md)
 
-1. **Offline-First Architecture (PWA):** Syncs over 2,400+ traffic laws to IndexedDB, allowing users to browse laws and calculate fines in dead zones.
-2. **AI Legal Assistant (RAG):** Ask complex legal questions in plain English. The AI cites specific sections of the MV Act, ensuring accuracy over hallucination.
-3. **State-Specific Challan Calculator:** Accounts for regional fine multipliers, vehicle classes, repeat offences, and juvenile clauses instantly.
-4. **Driver HUD & Analytics:** Real-time speed context and road safety indices tailored to the user's location.
+## Available functionality
 
----
+- Firebase Google and email/password sign-in using the original project and Android package.
+- Saved app-wide dark mode and a new Motion D logo with adaptive launcher icons.
+- Offline law browsing with state, category, and text filters, source dates, and saved laws.
+- Vehicle-specific first/repeat-offence estimates; native app supports selecting several offences. Missing amounts remain unspecified; compounding fees are separate.
+- A source-based assistant that retrieves matching jurisdiction records. Database lookup works without an AI key; optional AI explanations use the supplied context.
+- Native PDF sharing; browser PDF download.
+- Foreground GPS, automatic weather and mapped speed-limit estimates, GPS state selection, manual overrides, and clearly marked simulation. Camera lookup remains on demand.
+- Native speech input and on-demand spoken Drive status.
+- Explicit dataset coverage instead of invented traffic density or safety scores.
 
-## 💡 Hackathon Tech Additions (Latest Updates)
+## Data coverage
 
-1. **Native Android Port (Capacitor):** Fully packaged as an Android APK utilizing native device APIs (`@capacitor/filesystem` & `@capacitor/share`) to securely generate and share dynamic PDF reports directly from the device's offline cache.
-2. **Dynamic In-Browser PDF Generation:** Utilizes `jsPDF` and `AutoTable` injected locally to instantly generate beautiful, structured PDF reports for Traffic Laws and Analytics without relying on expensive backend document processors.
-3. **Smart IP-Based Geolocation Fallback:** If HTML5 hardware GPS fails (e.g., on a laptop/desktop without sensors), the app dynamically fails over to the `GeoJS` IP-Location API to guarantee localized weather and traffic data availability across all devices.
-4. **Granular WMO Weather Mapping:** Leverages the **Open-Meteo API** bound to real-time coordinates, accurately parsing highly granular WMO (World Meteorological Organization) weather codes to trigger contextual alerts like "Foggy (Low Visibility)" or "Snowy (Drive Slow)".
-5. **CartoDB Dark Matter Integration:** Upgraded Leaflet.js maps with high-contrast CartoDB Dark Matter tiles, perfectly harmonizing with the dark-mode tech aesthetic.
-6. **Robust Deployment Architecture:** Backend successfully deployed on Render with `/api/health` heartbeat endpoints monitored by UptimeRobot to completely eliminate server "cold-start" latency during live hackathon demos.
+The corrected seed produces **31 fine schedules covering 10 violation types across 13 jurisdictions**, from 25 source violation entries. Some regions contain just one offence. National coverage is limited.
 
----
+These are the existing project's historical records. Current laws and amendments have **not** been independently verified. The app makes missing data and source dates visible. It never silently substitutes a national amount for an unsupported state combination. Juvenile clauses, real-time traffic feeds, automatic legal speed-limit detection, and cloud bookmark synchronization are not implemented.
 
-## 🏗 Architecture
+## Run the backend and web app
 
-DriveLegal uses a modern API-first approach, decoupling the SPA frontend from a robust FastAPI backend.
+Python 3.11+:
 
-```mermaid
-graph TD
-    %% Frontend Layer
-    subgraph Frontend [PWA / Android Client]
-        UI[Vanilla JS SPA UI + Capacitor]
-        SW[Service Worker]
-        IDB[(IndexedDB)]
-        
-        UI <--> SW
-        SW <--> IDB
-    end
-
-    %% Backend Layer
-    subgraph Backend [FastAPI Server]
-        API[REST API Routes]
-        RAG[LangChain RAG Pipeline]
-        DB[(SQLite DB)]
-        Chroma[(Chroma Vector DB)]
-        
-        API --> DB
-        API <--> RAG
-        RAG <--> Chroma
-    end
-
-    %% External
-    LLM[Groq Cloud LLM]
-
-    %% Connections
-    SW <--> |Network First / Fallback| API
-    RAG <--> |API Calls| LLM
+```powershell
+python -m pip install -r backend/requirements.txt
+python scripts/seed_database.py
+python scripts/export_frontend_data.py
+python backend/main.py
 ```
 
----
+Open [localhost:8000](http://localhost:8000). API docs: [localhost:8000/docs](http://localhost:8000/docs).
 
-## 🚀 Quick Start (Docker)
+The database lookup assistant works without credentials. To enable AI explanations, copy `.env.example` to `.env` and set a server-side `GROQ_API_KEY` and model available to your account. See [Groq's supported models](https://console.groq.com/docs/models). Never place the API key in the web client or APK.
 
-The easiest way to run the application is using Docker.
+For a separately hosted web client, set `window.DRIVELEGAL_API_BASE` in `frontend/config.js` and configure the backend's `CORS_ORIGINS`. HTTPS is required for production PWA and device location features. Native backend settings accept HTTPS URLs.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/AdithyaSM31/DriveLegal---Road-Safety-Hackathon-2026.git
-   cd DriveLegal
-   ```
+Docker:
 
-2. **Set your Groq API Key:**
-   Create a `.env` file in the root directory and add your key:
-   ```bash
-   GROQ_API_KEY=gsk_your_api_key_here
-   ```
+```powershell
+docker compose up --build
+```
 
-3. **Run with Docker Compose:**
-   ```bash
-   docker-compose up --build
-   ```
+The v2 runtime retrieves structured SQLite records and does not require downloading or loading an embedding model. Legacy Chroma index tooling remains optional in `backend/requirements-embeddings.txt`.
 
-4. **Access the Application:**
-   Open your browser and navigate to: `http://localhost:8000`
+## Checks
 
----
+```powershell
+python -m pip install -r backend/requirements-dev.txt
+npm test
+```
 
-## 🛠 Manual Setup
+Native checks from `android-v2`:
 
-If you prefer to run it natively:
+```powershell
+.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest
+.\gradlew.bat :app:connectedDebugAndroidTest
+```
 
-1. **Install Python Dependencies:**
-   ```bash
-   pip install -r backend/requirements.txt
-   ```
+The native unit tests cover state/vehicle separation, multi-offence totals, unknown amounts, offline retrieval, stable bookmark keys, and Drive-limit comparisons. UI instrumentation covers the five screens and simulation without granting GPS permission.
 
-2. **Set Environment Variables:**
-   ```bash
-   export GROQ_API_KEY=gsk_your_api_key_here
-   ```
+The glass treatment uses static translucent fills, borders and restrained shadows. GPS pauses in the background; no continuously rendered map or decorative animation runs. These are implementation choices, not measured battery-life guarantees. See [Android's Compose performance guidance](https://developer.android.com/develop/ui/compose/performance).
 
-3. **Seed & Build Databases:**
-   ```bash
-   # Seed the relational database (Violations, Fines, Locations)
-   python scripts/seed_database.py
+## Original team
 
-   # Build the AI knowledge base (Vector Embeddings)
-   python scripts/build_embeddings.py
-   ```
+Adithya — Project Lead & Backend · Vaishnav — Frontend & UI/UX · Rishi — PWA & Offline · Marion — Database · Nitin — AI · Aysha — Analytics.
 
-4. **Start the Server:**
-   ```bash
-   python backend/main.py
-   ```
-   *The server will run on `http://localhost:8000` and automatically serve the static frontend.*
+All rights remain with the original project team.
 
----
-
-## 👨‍💻 The Team
-
-* **Adithya** — Project Lead & Backend Architect
-* **Vaishnav** — Frontend Engineering & UI/UX Design
-* **Rishi** — PWA Optimization & Offline Logic
-* **Marion** — Database Engineering & Seeding
-* **Nitin** — AI Engineering & RAG Pipeline
-* **Aysha** — Data Analytics & Backend Statistics 
-
----
-
-## 📜 License
-
-This project is submitted for the **Road Safety Hackathon 2026**. All rights reserved by the respective team members.
+The native app defaults to the original Render URL, verified reachable on 27 October 2026. That deployment still has the older API; deploy the backend changes here to enable v2 sync and grounded AI. See the native README for the exact compatibility check.

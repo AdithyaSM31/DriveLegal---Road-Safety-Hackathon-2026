@@ -1,0 +1,2 @@
+# Optional legacy vector-index tooling; not required by the v2 runtime.
+chromadb==0.6.*

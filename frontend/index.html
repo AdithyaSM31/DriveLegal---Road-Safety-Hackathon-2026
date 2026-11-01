@@ -2,317 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DriveLegal — India's Road Traffic Law Assistant</title>
-  <meta name="description" content="Know your rights on Indian roads. Instant challan calculator, law browser, and AI-powered legal assistant.">
-  <meta name="theme-color" content="#070a0f">
-  <link rel="icon" type="image/png" href="assets/logo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111313">
+  <meta name="description" content="A clearer way to understand Indian traffic rules. Browse laws, estimate fines, and keep your road essentials offline.">
+  <title>DriveLegal — A little knowledge. A safer journey.</title>
+  <link rel="icon" href="assets/drivelegal-motion-d.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-  <link rel="stylesheet" href="styles.css?v=19">
+  <link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
-
-<canvas id="beams-canvas"></canvas>
-
-<div class="app-container">
-
-  <!-- ═══ SIDEBAR ═══ -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon"><img src="assets/logo.png" alt="DriveLegal Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
-      <div class="brand-text">Drive<span>Legal</span></div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-label">Main Menu</div>
-      <button class="nav-btn active" data-view="view-home"><i class="fas fa-house"></i><span>Dashboard</span></button>
-      <button class="nav-btn" data-view="view-laws"><i class="fas fa-book-open"></i><span>Traffic Laws</span></button>
-      <button class="nav-btn" data-view="view-calculator"><i class="fas fa-calculator"></i><span>Fine Calculator</span></button>
-      <button class="nav-btn" data-view="view-analytics"><i class="fas fa-chart-line"></i><span>Road Analytics</span></button>
-      <button class="nav-btn" data-view="view-ai"><i class="fas fa-robot"></i><span>AI Assistant</span></button>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 3.5 6v6c0 4.5 5 7.5 8.5 9 3.5-1.5 8.5-4.5 8.5-9V6L12 3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/></symbol>
+<symbol id="i-calculator" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 10h1m6 0h1m-8 4h1m6 0h1m-8 4h1m6 0h1"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v18h17M9 16v-5m5 5V7m5 9V3"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6L12 3ZM20 2v4m-2-2h4"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 0-10 6 6 0 0 1 12 1 4.5 4.5 0 0 1-1 9H7Z"/><path d="m9 13 2 2 4-4"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+<symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></symbol>
+<symbol id="i-external" viewBox="0 0 24 24"><path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 1v2m0 18v2M1 12h2m18 0h2M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 13A9 9 0 0 1 11 3 9 9 0 1 0 21 13Z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 8a9 9 0 0 0-16-3L2 8m0-6v6h6m-5 8a9 9 0 0 0 16 3l3-3m0 6v-6h-6"/></symbol>
+<symbol id="i-car" viewBox="0 0 24 24"><path d="m5 8 2-5h10l2 5M3 8h18v10H3V8Zm2 10v3m14-3v3M6 12h2m8 0h2"/></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="5" r="3"/><circle cx="18" cy="19" r="3"/><path d="M9 5h7a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h7"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m3 3 19 9-19 9 4-9-4-9Zm4 9h15"/></symbol>
+</defs></svg>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Primary navigation">
+    <a class="brand" href="#overview"><span class="brand-mark"><img src="assets/drivelegal-motion-d.png" alt="DriveLegal Motion D" width="34" height="34"></span><span>drive<span class="brand-light">legal</span><small>KNOW BETTER. DRIVE SAFER.</small></span></a>
+    <div class="workspace-label">YOUR ROAD COMPANION</div>
+    <nav class="nav-list">
+      <a href="#overview" data-route="overview"><svg class="icon"><use href="#i-grid"/></svg><span>Overview</span></a>
+      <a href="#laws" data-route="laws"><svg class="icon"><use href="#i-book"/></svg><span>Traffic laws</span></a>
+      <a href="#calculator" data-route="calculator"><svg class="icon"><use href="#i-calculator"/></svg><span>Fine calculator</span></a>
+      <a href="#assistant" data-route="assistant"><svg class="icon"><use href="#i-spark"/></svg><span>Legal assistant</span><span class="tiny-tag">ASK</span></a>
+      <a href="#insights" data-route="insights"><svg class="icon"><use href="#i-chart"/></svg><span>Data & coverage</span></a>
     </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user"><div class="user-avatar">AS</div><div><div class="user-name">Adithya SM</div><small id="btn-logout" style="cursor:pointer; color:var(--text-muted); font-size:0.75rem;"><i class="fas fa-arrow-right-from-bracket"></i> Sign out</small></div><button class="icon-btn" id="btn-theme-desktop" style="margin-left:auto;"><i class="fas fa-moon"></i></button></div>
+    <div class="nav-divider"></div>
+    <a class="saved-link" href="#saved" data-route="saved"><svg class="icon"><use href="#i-bookmark"/></svg>Saved laws <span id="saved-count">0</span></a>
+    <div class="sidebar-bottom">
+      <div class="offline-promo"><span class="offline-promo-icon"><svg class="icon"><use href="#i-cloud"/></svg></span><strong>Ready for the road.</strong><p>Your law library travels with you, even offline.</p><button class="text-button" data-action="sync">Sync library <svg class="icon"><use href="#i-arrow"/></svg></button></div>
+      <button class="profile" data-action="account"><span class="avatar" id="profile-avatar">G</span><span><strong id="profile-name">Guest explorer</strong><small id="profile-status">No account needed</small></span><svg class="icon"><use href="#i-chevron"/></svg></button>
     </div>
   </aside>
-
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-  <!-- ═══ MAIN ═══ -->
-  <div class="main-wrapper">
-
-    <!-- Mobile Header -->
-    <header class="mobile-header" id="mobile-header">
-      <div class="mh-left">
-        <div class="mh-brand"><div class="brand-icon-sm"><img src="assets/logo.png" alt="DriveLegal Logo" style="width: 100%; height: 100%; object-fit: contain;"></div><span>Drive<span class="accent">Legal</span></span></div>
-      </div>
-      <div class="mh-right">
-          <button class="icon-btn" id="btn-theme-mobile" style="margin-right: 8px;"><i class="fas fa-moon"></i></button>
-          <div class="mh-noti-wrap" style="position: relative;">
-            <button class="icon-btn" id="btn-notifications"><i class="fas fa-bell"></i><span class="noti-dot" id="noti-dot" style="display: none;"></span></button>
-            <div class="mh-dropdown" id="noti-dropdown" style="min-width: 250px;">
-              <div style="padding: 12px; color: var(--text-light); text-align: center; font-size: 13px;" id="noti-list">No new notifications</div>
-            </div>
-          </div>
-          <div class="mh-profile-wrap">
-          <div class="avatar-sm" id="mh-avatar" style="cursor: pointer;">AS</div>
-          <div class="mh-dropdown" id="mh-dropdown">
-            <button id="btn-logout-mobile"><i class="fas fa-arrow-right-from-bracket"></i> Sign out</button>
-          </div>
-        </div>
-      </div>
+  <div class="main-shell">
+    <header class="topbar">
+      <a class="mobile-brand" href="#overview">drive<span>legal</span></a>
+      <form class="global-search" id="global-search" role="search"><svg class="icon"><use href="#i-search"/></svg><input id="global-query" aria-label="Search traffic laws" placeholder="Search a law, violation, or section…" autocomplete="off"><kbd>Ctrl K</kbd></form>
+      <div class="topbar-actions"><label class="region-select"><svg class="icon"><use href="#i-pin"/></svg><span class="sr-only">Jurisdiction</span><select id="global-region" aria-label="Select jurisdiction"><option>Loading regions…</option></select></label><button class="icon-button" data-action="theme" aria-label="Toggle color theme"><svg class="icon"><use href="#i-moon"/></svg></button></div>
     </header>
-
-    <div class="content-area" id="content-area">
-
-      <!-- ═══ DASHBOARD ═══ -->
-      <section class="view active" id="view-home">
-        <div class="greeting"><h1 id="greeting-text">Good Evening, Adithya 👋</h1><p>Drive safe. Stay legal.</p></div>
-
-        <div class="ctx-card">
-          <div class="ctx-top">
-            <div class="ctx-title-row"><div class="ctx-pin"><i class="fas fa-location-dot"></i></div><div><div class="ctx-title">Road Context</div><div class="ctx-addr">MG Road, Bangalore, KA 01 AB 1234</div></div></div>
-            <span class="live-badge"><span class="live-dot"></span> Live</span>
-          </div>
-          <div class="ctx-stats">
-            <div class="ctx-stat"><div class="stat-label">Traffic Density</div><div class="stat-val primary" id="live-traffic-val">Moderate</div><div class="traffic-cars" id="live-traffic-cars"><i class="fas fa-car-side"></i><i class="fas fa-car-side"></i><i class="fas fa-car-side"></i></div></div>
-            <div class="ctx-stat"><div class="stat-label">Weather</div><div class="stat-val">Loading...</div><div class="weather-row"><i class="fas fa-spinner spin"></i> --°C</div></div>
-          </div>
-          <div class="ctx-foot"><span><i class="fas fa-info-circle"></i> No rain expected</span><a class="ctx-link" id="btn-view-map">View on Map <i class="fas fa-chevron-right"></i></a></div>
-        </div>
-
-        <div class="speed-card">
-          <!-- GPS Tracker Info & Simulation Toggle -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px;">
-            <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-sec);font-weight:600;">
-              <i class="fas fa-satellite-dish" style="color:var(--primary);animation:pulse 2s infinite;"></i> GPS ACTIVE
-            </div>
-            <label class="sim-switch" style="display:inline-flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--text-sec);cursor:pointer;font-weight:600;user-select:none;">
-              Simulate Drive
-              <input type="checkbox" id="sim-toggle" style="display:none;">
-              <span class="sim-slider" style="position:relative;display:inline-block;width:34px;height:18px;background:var(--bg-elevated);border-radius:20px;border:1px solid var(--border-bright);transition:0.3s;">
-                <span class="sim-knob" style="position:absolute;content:'';height:12px;width:12px;left:2px;bottom:2px;background:var(--text-sec);border-radius:50%;transition:0.3s;"></span>
-              </span>
-            </label>
-          </div>
-
-          <div class="speed-row">
-            <div class="gauge-wrap">
-              <svg class="gauge-svg" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r="68" fill="none" stroke="#1a2332" stroke-width="10"/>
-                <circle class="gauge-arc" cx="80" cy="80" r="68" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-dasharray="320 500" stroke-dashoffset="320" stroke-linecap="round" transform="rotate(-126 80 80)"/>
-                <defs>
-                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#10b981"/>
-                    <stop offset="100%" stop-color="#34d399"/>
-                  </linearGradient>
-                  <linearGradient id="gaugeGradDanger" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#ef4444"/>
-                    <stop offset="100%" stop-color="#f97316"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div class="gauge-text"><small>Your Speed</small><div class="gauge-num">48</div><div class="gauge-unit">km/h</div></div>
-            </div>
-            <div class="limit-sign"><div class="limit-circle"><span>50</span></div><div class="limit-label">Speed Limit</div><div class="limit-val">50 km/h</div></div>
-          </div>
-          <div class="speed-status safe"><i class="fas fa-circle-check"></i> You're within the speed limit</div>
-        </div>
-
-        <div class="sec-header"><h2>Quick Actions</h2></div>
-        <div class="qa-grid" style="grid-template-columns: repeat(2, 1fr);">
-          <button class="qa-card" data-view-trigger="view-laws"><div class="qa-icon"><i class="fas fa-file-lines"></i></div><span>Check Fines</span></button>
-          <button class="qa-card" data-view-trigger="view-calculator"><div class="qa-icon"><i class="fas fa-calculator"></i></div><span>Fine Calculator</span></button>
-          <button class="qa-card" data-view-trigger="view-analytics"><div class="qa-icon"><i class="fas fa-chart-pie"></i></div><span>Analytics</span></button>
-          <button class="qa-card" data-view-trigger="view-ai"><div class="qa-icon"><i class="fas fa-robot"></i></div><span>AI ChatBot</span></button>
-        </div>
-
-        <div class="sec-header"><h2>Nearby Cameras</h2></div>
-        <div id="recent-alerts-container">
-          <div class="alert-row" style="justify-content: center; opacity: 0.7;">
-            <div class="alert-body"><div class="alert-sub">Locating nearby cameras...</div></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ LAW BROWSER ═══ -->
-      <section class="view" id="view-laws">
-        <div class="view-top">
-          <div class="vt-left"><div class="vt-icon"><i class="fas fa-shield-halved"></i></div><div><h1>Traffic Laws</h1><p>Explore Indian traffic laws, fines and penalties</p></div></div>
-          <div class="vt-right"><div class="info-pill"><i class="fas fa-info-circle"></i> As per Motor Vehicles Act, 1988<br><small>Last updated: May 2024</small></div><button class="btn-outline" id="btn-download-laws"><i class="fas fa-download"></i> Download</button></div>
-        </div>
-        <div class="laws-toolbar">
-          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="law-search" placeholder="Search violation or section..."></div>
-          <div class="filter-wrap"><i class="fas fa-filter"></i><select id="law-category" class="filter-select"><option value="">All Categories</option></select></div>
-        </div>
-        <div class="table-wrap">
-          <table class="laws-table">
-            <thead><tr><th>Section <i class="fas fa-sort"></i></th><th>Violation <i class="fas fa-sort"></i></th><th>First Offence Fine <i class="fas fa-sort"></i></th><th>Repeat Fine <i class="fas fa-sort"></i></th><th>Imprisonment <i class="fas fa-sort"></i></th><th>Status <i class="fas fa-sort"></i></th></tr></thead>
-            <tbody id="laws-tbody"></tbody>
-          </table>
-          <div id="laws-empty" class="empty-state" style="display:none;"><i class="fas fa-search"></i><p>No laws found matching your filters.</p></div>
-        </div>
-        <div class="laws-footer">
-          <span class="page-info" id="page-info">Showing 1 to 10 of 50 laws</span>
-          <div class="page-btns" id="page-btns"></div>
-          <div class="page-size-wrap">Rows per page <select id="page-size" class="page-size-sel"><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></div>
-        </div>
-      </section>
-
-      <!-- ═══ FINE CALCULATOR ═══ -->
-      <section class="view" id="view-calculator">
-        <div class="view-top">
-          <div class="vt-left"><div class="vt-icon green"><i class="fas fa-calculator"></i></div><div><h1>Fine Calculator</h1><p>Calculate traffic violation fines under Indian Motor Vehicles Act, 1988</p></div></div>
-          <div class="vt-right"><div class="info-pill success"><i class="fas fa-circle-check"></i> As per Motor Vehicles Act, 1988<br><small>Updated May 2024</small></div></div>
-        </div>
-        <div class="calc-grid">
-          <div class="calc-form card">
-            <h2>Select Violation Details</h2>
-            <div class="form-group"><label>State / Union Territory</label><div class="sel-icon"><i class="fas fa-location-dot"></i><select id="calc-state" class="form-select"><option value="">— Select State —</option></select></div></div>
-            <div class="form-group"><label>Violation Type</label><div class="sel-icon"><i class="fas fa-file-lines"></i><select id="calc-violation" class="form-select"><option value="">— Select Violation —</option></select></div></div>
-            <div class="form-group"><label>Vehicle Type (Optional)</label><div class="sel-icon"><i class="fas fa-car"></i><select id="calc-vehicle" class="form-select"><option value="">— Any Vehicle —</option></select></div></div>
-            <button class="btn-calc" id="btn-calc"><i class="fas fa-calculator"></i> Calculate Fine</button>
-            <div class="calc-note"><i class="fas fa-info-circle"></i> Selected rules are applicable as per the state &amp; central government norms.</div>
-          </div>
-          <div class="calc-result card" id="calc-result" style="display:none;">
-            <div class="cr-top"><h2>Violation Fine Details</h2><span class="jur-badge" id="res-jur">● Applicable in Karnataka</span></div>
-            <div class="cr-amount-wrap"><div class="cr-label">Total Fine Amount</div><div class="cr-amount">₹<span id="res-amount">5,000</span></div><div class="cr-words" id="res-words">Rupees Five Thousand Only</div></div>
-            <div class="cr-details">
-              <div class="cr-row"><div class="cr-ico blue"><i class="fas fa-book"></i></div><div class="cr-info"><strong>Legal Provision</strong><span id="res-section">Section 129, MV Act, 1988</span></div><span class="cr-badge" id="res-sec-badge">Sec 129</span></div>
-              <div class="cr-row"><div class="cr-ico orange"><i class="fas fa-gavel"></i></div><div class="cr-info"><strong>Imprisonment</strong><span id="res-jail">Up to 3 months</span></div><span class="cr-badge warn" id="res-jail-badge">Up to 3 months</span></div>
-              <div class="cr-row"><div class="cr-ico red"><i class="fas fa-id-card"></i></div><div class="cr-info"><strong>License Action</strong><span id="res-license">License may be suspended</span></div><span class="cr-badge danger" id="res-lic-badge">Suspension Possible</span></div>
-            </div>
-            <div class="cr-tip" id="res-tip"><div class="cr-tip-icon"><i class="fas fa-circle-check"></i></div><div><strong class="text-primary">Good to know</strong><p id="res-notes">Wearing a helmet is mandatory for rider and pillion under Section 129.</p></div></div>
-          </div>
-        </div>
-        <div class="calc-footer">
-          <div class="calc-footer-note"><i class="fas fa-scale-balanced"></i><div><strong>Please Note</strong><p>Fines may vary based on amendments and state rules. This calculator is for informational purposes only.</p></div></div>
-          <button class="btn-outline" id="btn-view-mvact">View MV Act, 1988 <i class="fas fa-up-right-from-square"></i></button>
-        </div>
-      </section>
-
-      <!-- ═══ ANALYTICS ═══ -->
-      <section class="view" id="view-analytics">
-        <div class="view-top">
-          <div class="vt-left"><div class="vt-icon"><i class="fas fa-shield-halved"></i></div><div><h1>Road Safety Analytics</h1><p>Real-time traffic violation data and safety metrics</p></div></div>
-          <div class="vt-right"><div class="date-pill"><i class="fas fa-calendar"></i> May 19 – May 25, 2024</div><button class="btn-outline" id="btn-refresh-analytics"><i class="fas fa-rotate"></i> Refresh</button></div>
-        </div>
-        <div class="hud-grid">
-          <div class="hud-card"><div class="hud-body"><div class="hud-label">SAFETY INDEX <i class="fas fa-circle-info"></i></div><div class="hud-val text-primary" id="hud-safety">92%</div><div class="hud-sub text-primary">Excellent</div><div class="hud-trend"><i class="fas fa-arrow-trend-up"></i> 8% vs last week</div></div><div class="hud-ring green"><i class="fas fa-shield-halved"></i></div></div>
-          <div class="hud-card"><div class="hud-body"><div class="hud-label">RISK LEVEL <i class="fas fa-circle-info"></i></div><div class="hud-val" id="hud-risk">Low</div><div class="hud-sub">Keep it up! Road conditions are safe.</div><div class="hud-trend down"><i class="fas fa-arrow-trend-down"></i> 12% vs last week</div></div><div class="hud-ring amber"><i class="fas fa-shield-halved"></i></div></div>
-          <div class="hud-card"><div class="hud-body"><div class="hud-label">TRAFFIC DENSITY <i class="fas fa-circle-info"></i></div><div class="hud-val text-warning" id="hud-traffic">Moderate</div><div class="hud-sub">Some slowdowns in high traffic zones.</div><div class="hud-trend"><i class="fas fa-arrow-trend-up"></i> 5% vs last week</div></div><div class="hud-ring orange"><i class="fas fa-car-side"></i></div></div>
-        </div>
-        <div class="chart-row">
-          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-bar"></i> Top 5 Traffic Violations</h3><a class="see-all" data-view-trigger="view-laws" style="cursor:pointer;">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="offenceChart"></canvas></div></div>
-          <div class="chart-card card"><div class="chart-head"><h3><i class="fas fa-chart-pie"></i> Violation Severity Breakdown</h3><a class="see-all" data-view-trigger="view-laws" style="cursor:pointer;">View All <i class="fas fa-chevron-right"></i></a></div><div class="chart-body"><canvas id="severityChart"></canvas></div></div>
-        </div>
-        <div class="insight-bar"><div class="insight-left"><i class="fas fa-chart-line"></i><span class="text-primary"><strong>Insight</strong></span><span>Over speeding and non-helmet violations contribute to 72% of total violations.</span><span class="sep">|</span><span>Focus on enforcement in high-risk zones.</span></div><button class="btn-outline" id="btn-download-analytics"><i class="fas fa-download"></i> Download Report</button></div>
-      </section>
-
-      <!-- ═══ AI ASSISTANT ═══ -->
-      <section class="view" id="view-ai">
-        <div class="ai-layout">
-          <div class="ai-sidebar" id="ai-sidebar" style="display:none;">
-            <div class="ai-sb-brand"><div class="brand-icon"><img src="assets/logo.png" alt="DriveLegal Logo" style="width: 100%; height: 100%; object-fit: contain;"></div><span>DriveLegal <span class="ai-tag">AI</span></span><p>Your AI Traffic Law Assistant</p></div>
-            <button class="btn-new-chat" id="btn-new-chat"><i class="fas fa-plus"></i> New Chat</button>
-            <div class="ai-sb-label">Recent Chats</div>
-            <div class="ai-chat-list" id="ai-chat-list">
-              <div class="ai-chat-item active"><i class="fas fa-message"></i><div><div>Fine for overspeeding</div><small>2 min ago</small></div></div>
-              <div class="ai-chat-item"><i class="fas fa-message"></i><div><div>Drunk driving penalties</div><small>1 hour ago</small></div></div>
-              <div class="ai-chat-item"><i class="fas fa-message"></i><div><div>Signal jumping fine</div><small>3 hours ago</small></div></div>
-              <div class="ai-chat-item"><i class="fas fa-message"></i><div><div>Without helmet fine</div><small>Yesterday</small></div></div>
-            </div>
-
-          </div>
-          <div class="ai-main" style="width: 100%; border-radius: 12px; border-left: 1px solid var(--border-color);">
-            <div class="ai-top-bar"><div class="ai-bot-info"><div class="ai-bot-avatar"><i class="fas fa-robot"></i></div><div><strong>DriveLegal AI</strong> <span class="online-dot">●</span><br><small>Always here to help you drive safe and legal.</small></div></div><div class="ai-top-actions"><button class="icon-btn"><i class="fas fa-wand-magic-sparkles"></i></button><span class="online-badge"><span class="online-dot">●</span> Online</span></div></div>
-            <div class="chat-messages" id="chat-messages">
-              <div class="msg bot-msg"><div class="msg-avatar"><i class="fas fa-robot"></i></div><div class="msg-bubble"><p>Hello! I'm your DriveLegal AI Copilot. Ask me anything about Indian traffic laws, fines, and your rights on the road.</p><div class="msg-time">Now</div></div></div>
-            </div>
-            <div class="chat-input-bar">
-              <div class="chat-input-wrap"><textarea id="ai-input" placeholder="Ask anything about traffic laws, fines, and your rights..." rows="1"></textarea><button class="icon-btn attach-btn"><i class="fas fa-paperclip"></i></button><button class="send-btn" id="ai-send"><i class="fas fa-paper-plane"></i></button></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div><!-- content-area -->
-  </div><!-- main-wrapper -->
-</div><!-- app-container -->
-
-<!-- Bottom Nav (Mobile) -->
-<nav class="bottom-nav" id="bottom-nav">
-  <button class="bn-item active" data-view="view-home"><i class="fas fa-house"></i><span>Home</span></button>
-  <button class="bn-item" data-view="view-laws"><i class="fas fa-book-open"></i><span>Laws</span></button>
-  <button class="bn-item" data-view="view-calculator"><i class="fas fa-calculator"></i><span>Calculator</span></button>
-  <button class="bn-item" data-view="view-analytics"><i class="fas fa-chart-simple"></i><span>Analytics</span></button>
-  <button class="bn-item" data-view="view-ai"><i class="fas fa-robot"></i><span>AI Assistant</span></button>
-</nav>
-
-<!-- Law Detail Modal -->
-<div class="modal-overlay" id="modal-overlay"></div>
-<div class="detail-modal" id="law-modal">
-  <div class="modal-head"><h2 id="modal-title">Law Detail</h2><button id="close-modal"><i class="fas fa-xmark"></i></button></div>
-  <div class="modal-body" id="modal-content"></div>
-</div>
-
-<!-- Auth Overlay -->
-<div class="auth-overlay" id="auth-overlay" style="display: none;">
-  <div class="auth-card">
-    <div class="auth-header">
-      <img src="assets/logo.png" alt="DriveLegal" class="auth-logo">
-      <h2>Welcome to DriveLegal</h2>
-      <p>Sign in to access your traffic law assistant</p>
-    </div>
-    
-    <div class="auth-form" id="login-form">
-      <div class="form-group">
-        <label>Email</label>
-        <div class="auth-input-wrap">
-          <i class="fas fa-envelope"></i>
-          <input type="email" id="auth-email" placeholder="Enter your email">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <div class="auth-input-wrap">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="auth-password" placeholder="Enter your password">
-        </div>
-      </div>
-      <div id="auth-error" class="auth-error"></div>
-      
-      <button class="btn-primary auth-btn" id="btn-email-login">Sign In</button>
-      <button class="btn-outline auth-btn" id="btn-email-signup">Create Account</button>
-      
-      <div class="auth-divider"><span>OR</span></div>
-      
-      <button class="btn-google auth-btn" id="btn-google-login">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Continue with Google
-      </button>
-    </div>
+    <div class="connection-banner" id="connection-banner" hidden>You're offline. Browsing and estimates use your saved law library.</div>
+    <main id="main" tabindex="-1"><div class="loading-state"><span class="loader"></span><h1>Getting your road essentials ready</h1><p>Loading the law library…</p></div></main>
+    <footer class="site-footer"><span><svg class="icon"><use href="#i-shield"/></svg> A little knowledge. A safer journey.</span><span>Made for Indian roads <span class="flag-stripes" aria-label="India"></span></span></footer>
   </div>
 </div>
-
-<!-- Map Overlay -->
-<div id="map-overlay" class="map-overlay">
-  <button id="close-map" class="close-map-btn"><i class="fas fa-times"></i></button>
-  <div id="leaflet-map" style="width: 100%; height: 100%;"></div>
-</div>
-
-<script src="mobile-auth.js?v=1"></script>
-<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
-<script type="module" src="js/offline.js"></script>
-<script src="assets/lib/jspdf.umd.min.js"></script>
-<script src="assets/lib/jspdf.plugin.autotable.min.js"></script>
-<script src="app.js?v=19"></script>
+<nav class="mobile-nav" aria-label="Mobile navigation"><a href="#overview" data-route="overview"><svg class="icon"><use href="#i-grid"/></svg><span>Home</span></a><a href="#laws" data-route="laws"><svg class="icon"><use href="#i-book"/></svg><span>Laws</span></a><a href="#calculator" data-route="calculator"><svg class="icon"><use href="#i-calculator"/></svg><span>Calculate</span></a><a href="#assistant" data-route="assistant"><svg class="icon"><use href="#i-spark"/></svg><span>Assistant</span></a><a href="#insights" data-route="insights"><svg class="icon"><use href="#i-chart"/></svg><span>Coverage</span></a></nav>
+<dialog id="detail-dialog" aria-labelledby="dialog-title"><div class="dialog-top"><span class="eyebrow">THE DETAILS MATTER</span><button class="icon-button" data-action="close-dialog" aria-label="Close dialog"><svg class="icon"><use href="#i-close"/></svg></button></div><div id="dialog-content"></div></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="config.js"></script>
+<script type="module" src="app.js?v=24"></script>
 </body>
 </html>

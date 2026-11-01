@@ -40,3 +40,8 @@ desktop.ini
 ../create_docx.py
 ../DriveLegal_Implementation_Plan.html
 ../DriveLegal_Team_Task_Breakdown.docx
+
+# Local dependencies and generated SQLite sidecars
+node_modules/
+data/*.db-wal
+data/*.db-shm

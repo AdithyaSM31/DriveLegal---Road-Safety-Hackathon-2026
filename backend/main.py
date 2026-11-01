@@ -4,6 +4,7 @@ Serves the backend API and the static frontend (PWA).
 """
 
 import sys
+import mimetypes
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -106,6 +107,10 @@ async def health_check():
 # ────────────────────────── Serve Frontend ──────────────────────────────────
 
 # Mount the frontend as static files (after API routes so they take priority)
+# Windows registry associations can incorrectly identify JavaScript as text/plain.
+mimetypes.init()
+mimetypes.add_type("text/javascript", ".mjs")
+mimetypes.add_type("text/javascript", ".js")
 frontend_path = Path(FRONTEND_DIR)
 if frontend_path.exists():
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

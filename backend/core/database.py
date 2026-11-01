@@ -328,7 +328,8 @@ async def browse_laws(
         # Fetch page
         offset = (page - 1) * page_size
         data_cursor = await db.execute(
-            f"""SELECT fs.id,
+            f"""SELECT fs.id, fs.violation_id, fs.jurisdiction_id, j.country_id,
+                       v.category_id, fs.vehicle_class_id, v.description, j.source_url,
                        v.name AS violation_name, vc.name AS category_name,
                        v.section_reference, v.severity,
                        j.name AS jurisdiction_name, c.name AS country_name,
@@ -362,7 +363,7 @@ async def export_all_fine_schedules() -> list[dict]:
     db = await get_db()
     try:
         cursor = await db.execute(
-            """SELECT fs.id,
+            """SELECT fs.id, fs.violation_id, v.category_id, v.description, j.source_url,
                       v.name AS violation_name, vc.name AS category_name,
                       v.section_reference, v.severity,
                       j.name AS jurisdiction_name, j.id AS jurisdiction_id,
@@ -419,61 +420,25 @@ async def search_violations_fts(query: str) -> list[dict]:
 # ────────────────────────── Analytics ───────────────────────────────────────
 
 async def get_analytics_summary(jurisdiction_id: int = None) -> dict:
-    """Get summarized analytics for the dashboard charts and HUD."""
-    db = await get_db()
-    try:
-        # 1. Top 5 Offences
-        query = """SELECT v.name, COUNT(fs.id) as count
-                   FROM fine_schedules fs
-                   JOIN violations v ON v.id = fs.violation_id"""
-        params = []
-        if jurisdiction_id:
-            query += " WHERE fs.jurisdiction_id = ?"
-            params.append(jurisdiction_id)
-        
-        query += " GROUP BY v.id ORDER BY count DESC LIMIT 5"
-        
-        offences_cursor = await db.execute(query, params)
-        offences_rows = await offences_cursor.fetchall()
-        offences = {
-            "labels": [row["name"] for row in offences_rows] if offences_rows else ["No Data"],
-            "values": [row["count"] for row in offences_rows] if offences_rows else [0]
-        }
-
-        # 2. Severity Breakdown
-        sev_query = """SELECT v.severity, COUNT(*) as count
-                       FROM violations v"""
-        sev_params = []
-        if jurisdiction_id:
-            sev_query += " JOIN fine_schedules fs ON v.id = fs.violation_id WHERE fs.jurisdiction_id = ?"
-            sev_params.append(jurisdiction_id)
-        
-        sev_query += " GROUP BY v.severity"
-        
-        severity_cursor = await db.execute(sev_query, sev_params)
-        severity_rows = await severity_cursor.fetchall()
-        severity = {
-            "labels": [row["severity"].capitalize() for row in severity_rows] if severity_rows else ["Minor"],
-            "values": [row["count"] for row in severity_rows] if severity_rows else [0]
-        }
-
-        # 3. HUD Metrics
-        total_violations = sum(severity["values"])
-        critical_count = next((v for l, v in zip(severity["labels"], severity["values"]) if l == "Critical"), 0)
-        
-        safety_score = 100 - (critical_count * 10) if total_violations > 0 else 95
-        safety_score = max(min(safety_score, 100), 60)
-        
-        risk_level = "Low" if safety_score > 85 else "Moderate" if safety_score > 70 else "High"
-        
-        return {
-            "offences": offences,
-            "severity": severity,
-            "hud": {
-                "safety_index": f"{safety_score}%",
-                "risk_level": risk_level,
-                "traffic_density": "Moderate" if not jurisdiction_id else ("High" if jurisdiction_id % 2 == 0 else "Low")
-            }
-        }
-    finally:
-        await db.close()
+    """Describe dataset coverage; schedules are not observed traffic incidents."""
+    rows = await export_all_fine_schedules()
+    if jurisdiction_id:
+        rows = [r for r in rows if r["jurisdiction_id"] == jurisdiction_id]
+    categories = {}
+    severity = {}
+    for row in rows:
+        categories[row["category_name"]] = categories.get(row["category_name"], 0) + 1
+        label = (row["severity"] or "unspecified").capitalize()
+        severity[label] = severity.get(label, 0) + 1
+    return {
+        "data_type": "fine_schedule_coverage",
+        "description": "Counts of records in the supplied dataset, not live traffic or crash statistics.",
+        "summary": {
+            "schedules": len(rows),
+            "jurisdictions": len({r["jurisdiction_id"] for r in rows}),
+            "violations": len({r["violation_id"] for r in rows}),
+            "dated_records": sum(bool(r["effective_date"]) for r in rows),
+        },
+        "categories": {"labels": list(categories), "values": list(categories.values())},
+        "severity": {"labels": list(severity), "values": list(severity.values())},
+    }

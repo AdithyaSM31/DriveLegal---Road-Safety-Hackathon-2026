@@ -36,7 +36,9 @@ LAW_MAP = {
 
 
 def extract_primary_section(s):
-    parts = re.findall(r'\d+[A-Z]?', s.upper().replace(" ", ""))
+    # Subsections such as 183(1) are not section 1.
+    section = re.sub(r'\([^)]*\)', '', s.upper().replace(" ", ""))
+    parts = re.findall(r'\d+[A-Z]?', section)
     return parts[-1] if parts else ""
 
 
@@ -178,9 +180,16 @@ def seed(dry_run=False):
                 imprisonment_str = None
 
             # 3i. Fine schedule per vehicle class
-            vehicle_classes = v.get("vehicle_classes", [None])
+            # An empty list in these seeds denotes an unrestricted schedule.
+            vehicle_classes = v.get("vehicle_classes") or [None]
             for vc_name in vehicle_classes:
                 vc_id = get_or_create(db, "vehicle_classes", vc_name) if vc_name else None
+
+                # Replace this logical schedule, including duplicates from earlier runs.
+                db.execute(
+                    "DELETE FROM fine_schedules WHERE violation_id = ? AND jurisdiction_id = ? AND vehicle_class_id IS ?",
+                    (violation_id, jurisdiction_id, vc_id),
+                )
 
                 db.execute(
                     """INSERT INTO fine_schedules

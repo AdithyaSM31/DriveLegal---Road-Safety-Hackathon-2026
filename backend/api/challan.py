@@ -37,7 +37,7 @@ async def compute_challan(req: ChallanRequest):
         )
 
     # Determine the applicable fine based on repeat offence status
-    if req.is_repeat_offence and row.get("subsequent_offence_fine"):
+    if req.is_repeat_offence:
         fine_amount = row["subsequent_offence_fine"]
     else:
         fine_amount = row.get("first_offence_fine")

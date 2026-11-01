@@ -3,6 +3,7 @@ DriveLegal — LLM Integration
 Provides the initialized ChatGroq client for high-speed inference using Llama 3.
 """
 
+import os
 from langchain_groq import ChatGroq
 from backend.config import GROQ_API_KEY
 import logging
@@ -22,9 +23,11 @@ def get_llm():
         # Llama 3 70B Versatile is currently one of the best speed/quality ratios on Groq
         llm = ChatGroq(
             groq_api_key=GROQ_API_KEY,
-            model_name="qwen/qwen3.8-27b",
+            model_name=os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
             temperature=0.0,
             max_tokens=1024,
+            request_timeout=15,
+            max_retries=1,
         )
         return llm
     except Exception as e:

@@ -84,29 +84,26 @@ async def list_vehicle_classes():
 
 
 @router.get("/speed-limit")
-async def get_speed_limit(lat: float, lon: float):
-    """Proxy for OpenStreetMap Overpass API to bypass browser CORS."""
-    query = f"[out:json];way(around:80, {lat}, {lon})[maxspeed];out tags;"
-    encoded_query = urllib.parse.quote(query)
-    url = f"https://overpass-api.de/api/interpreter?data={encoded_query}"
-    
-    req = urllib.request.Request(url, headers={'User-Agent': 'DriveLegal-App/1.0'})
+def get_speed_limit(lat: float = Query(..., ge=-90, le=90), lon: float = Query(..., ge=-180, le=180)):
+    """Nearby OSM tags are candidates, not a map-matched legal speed limit."""
+    import re
+    query = f"[out:json][timeout:10];way(around:80,{lat},{lon})[maxspeed];out tags;"
+    url = "https://overpass-api.de/api/interpreter?data=" + urllib.parse.quote(query)
+    req = urllib.request.Request(url, headers={"User-Agent": "DriveLegal-App/2.0"})
     try:
-        with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            speed_limit = 50 # Default
-            if data and data.get("elements") and len(data["elements"]) > 0:
-                speed_tag = data["elements"][0].get("tags", {}).get("maxspeed")
-                if speed_tag:
-                    # Extract numeric part (e.g., "50", "50 mph")
-                    num_str = "".join(filter(str.isdigit, str(speed_tag)))
-                    if num_str:
-                        speed_limit = int(num_str)
-            return {"speed_limit": speed_limit}
-    except Exception as e:
-        print(f"Overpass API proxy error: {e}")
-        # Return fallback on error
-        return {"speed_limit": 50, "error": str(e)}
+        with urllib.request.urlopen(req, timeout=12) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        candidates = []
+        for element in data.get("elements", []):
+            tag = element.get("tags", {}).get("maxspeed", "")
+            match = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(mph|km/h|kph)?", tag.strip(), re.I)
+            if match:
+                number = float(match.group(1)) * (1.609344 if (match.group(2) or "").lower() == "mph" else 1)
+                candidates.append({"way_id": element.get("id"), "speed_kmh": round(number), "raw_tag": tag})
+        return {"speed_limit": None, "candidates": candidates, "source": "OpenStreetMap", "note": "Nearby roads have not been matched to your direction or carriageway. Follow posted signs."}
+    except Exception:
+        return {"speed_limit": None, "candidates": [], "error": "Map data unavailable"}
+
 
 def haversine_dist(lat1, lon1, lat2, lon2):
     R = 6371000 # radius of Earth in meters
@@ -117,10 +114,10 @@ def haversine_dist(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 @router.get("/speed-cameras")
-async def get_speed_cameras(
-    lat: float, 
-    lon: float, 
-    radius: int = Query(5000, description="Search radius in meters")
+def get_speed_cameras(
+    lat: float = Query(..., ge=-90, le=90),
+    lon: float = Query(..., ge=-180, le=180),
+    radius: int = Query(5000, ge=100, le=10000, description="Search radius in meters")
 ):
     """Fetch nearby speed cameras using OpenStreetMap Overpass API."""
     query = f"[out:json];node(around:{radius}, {lat}, {lon})[highway=speed_camera];out tags geom;"
@@ -129,7 +126,7 @@ async def get_speed_cameras(
     
     req = urllib.request.Request(url, headers={'User-Agent': 'DriveLegal-App/1.0'})
     try:
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, timeout=12) as response:
             data = json.loads(response.read().decode('utf-8'))
             cameras = []
             if data and "elements" in data:
@@ -154,4 +151,4 @@ async def get_speed_cameras(
             return {"cameras": cameras}
     except Exception as e:
         print(f"Overpass API proxy error for cameras: {e}")
-        return {"cameras": [], "error": str(e)}
+        return {"cameras": [], "error": "Map data unavailable"}

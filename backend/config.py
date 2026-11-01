@@ -38,4 +38,4 @@ APP_DESCRIPTION = (
     "AI-powered chatbot providing location-specific information on "
     "traffic laws, violations, and fine schedules."
 )
-APP_VERSION = "1.0.0"
+APP_VERSION = "2.0.0"

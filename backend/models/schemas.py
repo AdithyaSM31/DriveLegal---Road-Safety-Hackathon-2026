@@ -58,10 +58,10 @@ class VehicleClassOut(BaseModel):
 
 class ChallanRequest(BaseModel):
     """Request body for the Challan Calculator."""
-    jurisdiction_id: int = Field(..., description="ID of the state/region")
-    violation_id: int = Field(..., description="ID of the specific violation")
+    jurisdiction_id: int = Field(..., gt=0, description="ID of the state/region")
+    violation_id: int = Field(..., gt=0, description="ID of the specific violation")
     vehicle_class_id: Optional[int] = Field(
-        None, description="ID of the vehicle class (None = any)"
+        None, gt=0, description="ID of the vehicle class (None = any)"
     )
     is_repeat_offence: bool = Field(
         False, description="True if this is a subsequent offence"
@@ -105,6 +105,13 @@ class ChallanResponse(BaseModel):
 class FineScheduleOut(BaseModel):
     """A single fine schedule entry for the law browser."""
     id: int
+    violation_id: int
+    jurisdiction_id: int
+    country_id: int
+    category_id: int
+    vehicle_class_id: Optional[int] = None
+    description: Optional[str] = None
+    source_url: Optional[str] = None
     violation_name: str
     category_name: Optional[str] = None
     section_reference: Optional[str] = None
@@ -136,7 +143,7 @@ class LawsResponse(BaseModel):
 # ──────────────────────────── Chat (stub for Day 2) ─────────────────────────
 
 class ChatRequest(BaseModel):
-    message: str = Field(..., description="User's question about traffic laws")
+    message: str = Field(..., min_length=1, max_length=2000, description="User's question about traffic laws")
     jurisdiction_id: Optional[int] = Field(
         None, description="Optional jurisdiction context"
     )
@@ -148,8 +155,10 @@ class Citation(BaseModel):
     source: str
     section: Optional[str] = None
     jurisdiction: Optional[str] = None
+    url: Optional[str] = None
 
 class ChatResponse(BaseModel):
     reply: str
     citations: list[Citation] = []
     session_id: str
+    mode: str = "database"

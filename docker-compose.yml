@@ -7,8 +7,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount the data directory to persist the SQLite database and ChromaDB across container restarts
+      # Mount the data directory to persist the SQLite database across container restarts
       - ./data:/app/data
     environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
     restart: unless-stopped
